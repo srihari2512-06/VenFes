@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - name: Install and test server
+        run: |
+          cd server
+          npm ci || npm install
+          npm test
+      - name: Install and build client
+        run: |
+          cd client
+          npm ci || npm install
+          npm run build

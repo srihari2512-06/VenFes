@@ -1,0 +1,15 @@
+{
+  "name": "venfes-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-Vendor E-Commerce Platform with Analytics (MERN)",
+  "scripts": {
+    "server:test": "cd server && npm test",
+    "server:dev": "cd server && npm run dev",
+    "client:build": "cd client && npm run build",
+    "client:dev": "cd client && npm run dev",
+    "test": "cd server && npm test",
+    "build": "cd client && npm run build",
+    "seed": "cd server && node src/seed.js"
+  }
+}
