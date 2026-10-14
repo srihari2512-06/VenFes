@@ -48,8 +48,11 @@ app.use('/api/engagement', engagementRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/upload', uploadRoutes);
 
-// Catch-all 404 handler
-app.use((req, res, next) => {
+import path from 'path';
+import fs from 'fs';
+
+// Catch-all 404 handler for API routes
+app.all('/api/*', (req, res) => {
   res.status(404).json({
     error: {
       code: 'ROUTE_NOT_FOUND',
@@ -57,6 +60,27 @@ app.use((req, res, next) => {
     }
   });
 });
+
+// Serve client build if available (production / static fallback)
+const clientDistPath = path.resolve(process.cwd(), '../client/dist');
+const clientDistLocal = path.resolve(process.cwd(), 'client/dist');
+const resolvedDist = fs.existsSync(clientDistPath) ? clientDistPath : (fs.existsSync(clientDistLocal) ? clientDistLocal : null);
+
+if (resolvedDist) {
+  app.use(express.static(resolvedDist));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(resolvedDist, 'index.html'));
+  });
+} else {
+  app.use((req, res) => {
+    res.status(404).json({
+      error: {
+        code: 'ROUTE_NOT_FOUND',
+        message: `Cannot ${req.method} ${req.originalUrl}`
+      }
+    });
+  });
+}
 
 // Central Error Handler (NFR-08)
 app.use(errorHandler);

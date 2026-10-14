@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Lock, Mail, User, Store, Shield } from 'lucide-react';
 
-export default function AuthPages({ onSuccess }) {
+export default function AuthPages({ onSuccess, initialMode }) {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { login, register } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+
+  const isRegisterRoute = initialMode === 'register' || location.pathname === '/register';
+  const [isLogin, setIsLogin] = useState(!isRegisterRoute);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -13,6 +18,10 @@ export default function AuthPages({ onSuccess }) {
   const [storeDescription, setStoreDescription] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLogin(location.pathname !== '/register' && initialMode !== 'register');
+  }, [location.pathname, initialMode]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -31,7 +40,12 @@ export default function AuthPages({ onSuccess }) {
           storeDescription
         });
       }
-      onSuccess();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        const dest = location.state?.from?.pathname || (role === 'vendor' ? '/vendor' : '/');
+        navigate(dest, { replace: true });
+      }
     } catch (err) {
       setError(err.message);
     } finally {

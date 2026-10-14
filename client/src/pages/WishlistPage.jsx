@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { Heart, Trash2, ShoppingCart } from 'lucide-react';
 
 export default function WishlistPage({ onSelectProduct }) {
+  const navigate = useNavigate();
   const { token } = useAuth();
   const { addToCart } = useCart();
   const [items, setItems] = useState([]);
@@ -70,7 +72,7 @@ export default function WishlistPage({ onSelectProduct }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {items.map((item) => (
             <div key={item._id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => onSelectProduct(item._id)}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => (onSelectProduct ? onSelectProduct(item._id) : navigate(`/product/${item._id}`))}>
                 <div style={{ width: '64px', height: '64px', backgroundColor: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
                   {item.images?.[0] ? <img src={item.images[0]} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
                 </div>

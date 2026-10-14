@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Star, ShieldCheck, Flag, ArrowLeft, ShoppingCart, Check, AlertCircle } from 'lucide-react';
 
 export default function ProductDetail({ productId, onBack }) {
+  const params = useParams();
+  const navigate = useNavigate();
+  const effectiveProductId = productId || params.id;
+  const handleBack = onBack || (() => navigate(-1));
+
   const { addToCart } = useCart();
   const { user, token } = useAuth();
 
@@ -22,15 +28,17 @@ export default function ProductDetail({ productId, onBack }) {
   const [reviewError, setReviewError] = useState('');
 
   useEffect(() => {
-    loadData();
-  }, [productId]);
+    if (effectiveProductId) {
+      loadData();
+    }
+  }, [effectiveProductId]);
 
   async function loadData() {
     setLoading(true);
     try {
       const [prodRes, revRes] = await Promise.all([
-        fetch(`/api/products/${productId}`),
-        fetch(`/api/engagement/reviews/${productId}`)
+        fetch(`/api/products/${effectiveProductId}`),
+        fetch(`/api/engagement/reviews/${effectiveProductId}`)
       ]);
       const prodData = await prodRes.json();
       const revData = await revRes.json();
@@ -127,7 +135,7 @@ export default function ProductDetail({ productId, onBack }) {
         </div>
       )}
 
-      <button onClick={onBack} className="btn btn-secondary btn-sm" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+      <button onClick={handleBack} className="btn btn-secondary btn-sm" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '4px' }}>
         <ArrowLeft size={16} /> Back to Catalog
       </button>
 

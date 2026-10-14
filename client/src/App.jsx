@@ -1,74 +1,106 @@
-import React, { useState } from 'react';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import ScrollToTop from './components/ScrollToTop';
+import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
+
+// Pages
 import Catalog from './pages/Catalog';
 import ProductDetail from './pages/ProductDetail';
 import CartPage from './pages/CartPage';
 import OrdersPage from './pages/OrdersPage';
 import WishlistPage from './pages/WishlistPage';
+import AccountPage from './pages/AccountPage';
+import StorePage from './pages/StorePage';
 import VendorPortal from './pages/VendorPortal';
 import AdminPortal from './pages/AdminPortal';
 import AuthPages from './pages/AuthPages';
+import NotFoundPage from './pages/NotFoundPage';
 
-function MainApp() {
-  const [currentView, setCurrentView] = useState('catalog');
-  const [selectedProductId, setSelectedProductId] = useState(null);
-  const { user } = useAuth();
-
+export function AppRoutes() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar currentView={currentView} setCurrentView={setCurrentView} />
+      <ScrollToTop />
+      <Navbar />
 
       <main style={{ flex: 1 }}>
-        {currentView === 'catalog' && (
-          <Catalog
-            onSelectProduct={(id) => {
-              setSelectedProductId(id);
-              setCurrentView('product-detail');
-            }}
+        <Routes>
+          {/* Public Storefront Routes */}
+          <Route path="/" element={<Catalog />} />
+          <Route path="/products" element={<Catalog />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/store/:storeId" element={<StorePage />} />
+          <Route path="/cart" element={<CartPage />} />
+
+          {/* Auth Routes */}
+          <Route path="/login" element={<AuthPages initialMode="login" />} />
+          <Route path="/register" element={<AuthPages initialMode="register" />} />
+
+          {/* Customer / Authenticated Protected Routes */}
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
+                <CartPage />
+              </ProtectedRoute>
+            }
           />
-        )}
-
-        {currentView === 'product-detail' && (
-          <ProductDetail
-            productId={selectedProductId}
-            onBack={() => setCurrentView('catalog')}
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
+                <OrdersPage />
+              </ProtectedRoute>
+            }
           />
-        )}
-
-        {currentView === 'cart' && (
-          <CartPage
-            onBrowse={() => setCurrentView('catalog')}
-            onOrderComplete={() => setCurrentView('orders')}
+          <Route
+            path="/orders/:id"
+            element={
+              <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
+                <OrdersPage />
+              </ProtectedRoute>
+            }
           />
-        )}
-
-        {currentView === 'orders' && (
-          <OrdersPage
-            onSelectProduct={(id) => {
-              setSelectedProductId(id);
-              setCurrentView('product-detail');
-            }}
+          <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
+                <WishlistPage />
+              </ProtectedRoute>
+            }
           />
-        )}
-
-        {currentView === 'wishlist' && (
-          <WishlistPage
-            onSelectProduct={(id) => {
-              setSelectedProductId(id);
-              setCurrentView('product-detail');
-            }}
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute allowedRoles={['customer', 'vendor', 'admin']}>
+                <AccountPage />
+              </ProtectedRoute>
+            }
           />
-        )}
 
-        {currentView === 'vendor' && <VendorPortal />}
+          {/* Role Protected Portals */}
+          <Route
+            path="/vendor/*"
+            element={
+              <ProtectedRoute allowedRoles={['vendor']}>
+                <VendorPortal />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminPortal />
+              </ProtectedRoute>
+            }
+          />
 
-        {currentView === 'admin' && <AdminPortal />}
-
-        {currentView === 'auth' && (
-          <AuthPages onSuccess={() => setCurrentView('catalog')} />
-        )}
+          {/* 404 Catch-All */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
       </main>
 
       <footer style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '24px 16px', marginTop: 'auto', textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)' }}>
@@ -83,10 +115,12 @@ function MainApp() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <MainApp />
-      </CartProvider>
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
+          <AppRoutes />
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

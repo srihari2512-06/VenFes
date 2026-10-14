@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Package, Store, Clock, CheckCircle, RefreshCcw } from 'lucide-react';
+import { Package, Store, Clock, CheckCircle, RefreshCcw, ArrowLeft } from 'lucide-react';
 
 export default function OrdersPage({ onSelectProduct }) {
+  const { id: orderFilterId } = useParams();
+  const navigate = useNavigate();
   const { token } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +60,12 @@ export default function OrdersPage({ onSelectProduct }) {
         </button>
       </div>
 
+      {orderFilterId && (
+        <Link to="/orders" className="btn btn-secondary btn-sm" style={{ marginBottom: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <ArrowLeft size={14} /> Back to All Orders
+        </Link>
+      )}
+
       {error && <div className="state-error">{error}</div>}
 
       {orders.length === 0 ? (
@@ -67,13 +76,17 @@ export default function OrdersPage({ onSelectProduct }) {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {orders.map((ord) => (
+          {orders
+            .filter((ord) => !orderFilterId || ord._id === orderFilterId || ord.orderNumber === orderFilterId)
+            .map((ord) => (
             <div key={ord._id} className="card">
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '12px', marginBottom: '16px' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{ord.orderNumber}</span>
+                    <Link to={`/orders/${ord._id}`} style={{ fontWeight: 'bold', fontSize: '16px', color: 'var(--primary)' }}>
+                      {ord.orderNumber}
+                    </Link>
                     <span className="badge badge-paid">{ord.paymentStatus}</span>
                   </div>
                   <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -117,7 +130,7 @@ export default function OrdersPage({ onSelectProduct }) {
                             <span style={{ color: 'var(--text-muted)' }}>₹{item.subtotal}</span>
                             {sub.status === 'delivered' && (
                               <button
-                                onClick={() => onSelectProduct(item.productId)}
+                                onClick={() => (onSelectProduct ? onSelectProduct(item.productId) : navigate(`/product/${item.productId}`))}
                                 className="btn btn-secondary btn-sm"
                                 style={{ fontSize: '11px', padding: '2px 6px' }}
                               >

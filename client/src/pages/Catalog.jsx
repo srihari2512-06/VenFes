@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Search, Heart, Star, AlertTriangle, Check, ShoppingCart } from 'lucide-react';
 
-export default function Catalog({ onSelectProduct }) {
+export default function Catalog({ onSelectProduct, initialVendorId }) {
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user, token } = useAuth();
 
@@ -26,6 +28,9 @@ export default function Catalog({ onSelectProduct }) {
     setError('');
     try {
       let url = '/api/products?limit=24';
+      if (initialVendorId) {
+        url += `&vendorId=${encodeURIComponent(initialVendorId)}`;
+      }
       if (selectedCategory !== 'All') {
         url += `&category=${encodeURIComponent(selectedCategory)}`;
       }
@@ -165,7 +170,10 @@ export default function Catalog({ onSelectProduct }) {
               <div
                 key={p._id}
                 className="card"
-                onClick={() => onSelectProduct(p._id)}
+                onClick={() => {
+                  if (onSelectProduct) onSelectProduct(p._id);
+                  else navigate(`/product/${p._id}`);
+                }}
                 style={{
                   cursor: 'pointer',
                   display: 'flex',

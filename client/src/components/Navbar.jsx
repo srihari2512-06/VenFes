@@ -1,82 +1,98 @@
 import React from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { ShoppingBag, ShoppingCart, User, Store, Shield, LogOut, Heart, Package } from 'lucide-react';
 
-export default function Navbar({ currentView, setCurrentView }) {
+export default function Navbar() {
   const { user, logout, isAdmin, isVendor } = useAuth();
   const { itemCount } = useCart();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    await logout();
+    navigate('/login');
+  }
 
   return (
     <header style={{ backgroundColor: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 }}>
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
         {/* Brand */}
-        <div 
-          onClick={() => setCurrentView('catalog')}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '20px', color: 'var(--primary)' }}
+        <Link 
+          to="/"
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '20px', color: 'var(--primary)' }}
         >
           <ShoppingBag size={24} />
           <span>Venfes Marketplace</span>
-        </div>
+        </Link>
 
         {/* Navigation Links */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <button
-            onClick={() => setCurrentView('catalog')}
-            className={`btn ${currentView === 'catalog' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <NavLink
+            to="/products"
+            className={({ isActive }) => `btn ${isActive ? 'btn-primary' : 'btn-secondary'} btn-sm`}
           >
             Storefront
-          </button>
+          </NavLink>
 
           {user && (
             <>
-              <button
-                onClick={() => setCurrentView('orders')}
-                className={`btn ${currentView === 'orders' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+              <NavLink
+                to="/orders"
+                className={({ isActive }) => `btn ${isActive ? 'btn-primary' : 'btn-secondary'} btn-sm`}
                 style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
               >
                 <Package size={16} />
                 <span>My Orders</span>
-              </button>
+              </NavLink>
 
-              <button
-                onClick={() => setCurrentView('wishlist')}
-                className={`btn ${currentView === 'wishlist' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+              <NavLink
+                to="/wishlist"
+                className={({ isActive }) => `btn ${isActive ? 'btn-primary' : 'btn-secondary'} btn-sm`}
                 style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
               >
                 <Heart size={16} />
                 <span>Wishlist</span>
-              </button>
+              </NavLink>
+
+              <NavLink
+                to="/account"
+                className={({ isActive }) => `btn ${isActive ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <User size={16} />
+                <span>Account</span>
+              </NavLink>
             </>
           )}
 
           {isVendor && (
-            <button
-              onClick={() => setCurrentView('vendor')}
-              className={`btn ${currentView === 'vendor' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+            <NavLink
+              to="/vendor"
+              className={({ isActive }) => `btn ${isActive ? 'btn-primary' : 'btn-secondary'} btn-sm`}
               style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               <Store size={16} />
               <span>Vendor Portal</span>
-            </button>
+            </NavLink>
           )}
 
           {isAdmin && (
-            <button
-              onClick={() => setCurrentView('admin')}
-              className={`btn ${currentView === 'admin' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+            <NavLink
+              to="/admin"
+              className={({ isActive }) => `btn ${isActive ? 'btn-primary' : 'btn-secondary'} btn-sm`}
               style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               <Shield size={16} />
               <span>Admin Portal</span>
-            </button>
+            </NavLink>
           )}
         </nav>
 
         {/* User / Cart actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button
-            onClick={() => setCurrentView('cart')}
+          <Link
+            to="/cart"
             className="btn btn-secondary"
             style={{ position: 'relative', padding: '8px 12px' }}
             aria-label="Shopping Cart"
@@ -103,22 +119,22 @@ export default function Navbar({ currentView, setCurrentView }) {
                 {itemCount}
               </span>
             )}
-          </button>
+          </Link>
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                 <strong>{user.name}</strong> ({user.role})
               </span>
-              <button onClick={logout} className="btn btn-secondary btn-sm" title="Logout">
+              <button onClick={handleLogout} className="btn btn-secondary btn-sm" title="Logout">
                 <LogOut size={16} />
               </button>
             </div>
           ) : (
-            <button onClick={() => setCurrentView('auth')} className="btn btn-primary btn-sm">
+            <Link to="/login" className="btn btn-primary btn-sm">
               <User size={16} />
               <span>Sign In</span>
-            </button>
+            </Link>
           )}
         </div>
       </div>

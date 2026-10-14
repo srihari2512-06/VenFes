@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Trash2, Store, CreditCard, ShieldCheck, CheckCircle2, ShoppingBag } from 'lucide-react';
 
 export default function CartPage({ onBrowse, onOrderComplete }) {
+  const navigate = useNavigate();
+  const handleBrowse = onBrowse || (() => navigate('/products'));
+  const handleOrderComplete = onOrderComplete || (() => navigate('/orders'));
   const { cart, updateQuantity, removeItem, clearCart } = useCart();
   const { user, token } = useAuth();
 
@@ -24,7 +28,7 @@ export default function CartPage({ onBrowse, onOrderComplete }) {
         <div className="card" style={{ maxWidth: '480px', margin: '0 auto', padding: '32px' }}>
           <h2>Sign In Required</h2>
           <p style={{ color: 'var(--text-muted)', margin: '16px 0' }}>Please log in to your account to view your cart and proceed with checkout.</p>
-          <button onClick={onBrowse} className="btn btn-primary">Sign In / Browse Catalog</button>
+          <button onClick={handleBrowse} className="btn btn-primary">Sign In / Browse Catalog</button>
         </div>
       </div>
     );
@@ -71,7 +75,7 @@ export default function CartPage({ onBrowse, onOrderComplete }) {
             ))}
           </div>
 
-          <button onClick={onOrderComplete} className="btn btn-primary" style={{ width: '100%' }}>
+          <button onClick={handleOrderComplete} className="btn btn-primary" style={{ width: '100%' }}>
             View in My Orders
           </button>
         </div>
@@ -87,7 +91,7 @@ export default function CartPage({ onBrowse, onOrderComplete }) {
           <ShoppingBag size={48} style={{ margin: '0 auto 16px', color: 'var(--text-muted)' }} />
           <h3>Your shopping cart is empty</h3>
           <p style={{ margin: '12px 0 20px' }}>Explore products from independent verified sellers and add items to your cart.</p>
-          <button onClick={onBrowse} className="btn btn-primary">Start Shopping</button>
+          <button onClick={handleBrowse} className="btn btn-primary">Start Shopping</button>
         </div>
       </div>
     );
