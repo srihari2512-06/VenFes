@@ -2,6 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import {
   getProducts,
+  getProductSuggestions,
   getProductById,
   createProduct,
   updateProduct,
@@ -11,12 +12,14 @@ import {
   getVendorProducts
 } from '../controllers/productController.js';
 import { requireAuth, requireRole, requireApprovedVendor } from '../middleware/auth.js';
+import { rateLimit } from '../middleware/rateLimit.js';
 
 const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB cap
 const router = Router();
 
 // Public routes
 router.get('/', getProducts);
+router.get('/suggest', rateLimit({ windowMs: 60 * 1000, max: 120 }), getProductSuggestions);
 router.get('/:id', getProductById);
 
 // Vendor product routes
