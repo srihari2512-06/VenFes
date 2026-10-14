@@ -46,9 +46,10 @@ export async function seedDatabase() {
     role: 'vendor',
     vendorProfile: {
       storeName: 'Apex Audio & Gear',
-      storeDescription: 'High-fidelity audio monitors and ergonomic mechanical peripherals.',
+      storeDescription: 'High-fidelity audio monitors and ergonomic mechanical peripherals crafted in Bengaluru.',
       status: 'approved',
-      kycDocumentUrl: 'https://docs.venfes.com/kyc/apex-license.pdf'
+      kycDocumentUrl: 'https://docs.venfes.com/kyc/apex-license.pdf',
+      handlingDays: 2
     }
   });
 
@@ -59,9 +60,10 @@ export async function seedDatabase() {
     role: 'vendor',
     vendorProfile: {
       storeName: 'Urban Silhouette',
-      storeDescription: 'Technical performance apparel, sustainable footwear, and durable everyday carry bags.',
+      storeDescription: 'Technical performance apparel, sustainable footwear, and durable everyday carry gear.',
       status: 'approved',
-      kycDocumentUrl: 'https://docs.venfes.com/kyc/urban-gst.pdf'
+      kycDocumentUrl: 'https://docs.venfes.com/kyc/urban-gst.pdf',
+      handlingDays: 3
     }
   });
 
@@ -72,9 +74,10 @@ export async function seedDatabase() {
     role: 'vendor',
     vendorProfile: {
       storeName: 'Monsoon Valley Roasters',
-      storeDescription: 'Single-origin artisanal coffee beans and pour-over brewing gear.',
+      storeDescription: 'Single-origin artisanal coffee beans and pour-over brewing gear from Coorg.',
       status: 'pending',
-      kycDocumentUrl: 'https://docs.venfes.com/kyc/monsoon-fssai.pdf'
+      kycDocumentUrl: 'https://docs.venfes.com/kyc/monsoon-fssai.pdf',
+      handlingDays: 1
     }
   });
 
@@ -87,17 +90,38 @@ export async function seedDatabase() {
     role: 'customer'
   });
 
-  // 4. Create Products
+  // 4. Create Products (Enriched with MRP, brand, highlights and specifications)
   const products = await Product.create([
     {
       name: 'Apex Studio Wireless Headphones',
       description: 'Active Noise Cancellation, 40mm beryllium drivers, 38-hour battery life and Bluetooth 5.3 multipoint.',
       price: 4999,
+      mrp: 6999, // ~28% discount
+      brand: 'Apex Audio',
+      highlights: [
+        'Active Noise Cancellation up to 35dB with Transparency Mode',
+        '40mm beryllium dynamic drivers for studio-grade bass',
+        'Up to 38 hours playback with Type-C Fast Fuel charge',
+        'Dual-device Bluetooth 5.3 multipoint auto-switch',
+        'Plush memory foam ear cushions engineered for Indian climates'
+      ],
+      specifications: [
+        { label: 'Model', value: 'Apex ANC-Pro 2' },
+        { label: 'Driver Size', value: '40 mm' },
+        { label: 'Frequency Response', value: '20Hz - 40,000Hz' },
+        { label: 'Battery Life', value: '38 Hours' },
+        { label: 'Charging Interface', value: 'USB Type-C' },
+        { label: 'Weight', value: '245 g' },
+        { label: 'Warranty', value: '1 Year Domestic Replacement' }
+      ],
       category: 'Electronics',
       stock: 35,
       lowStockThreshold: 5,
       vendorId: vendor1._id,
-      images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80'],
+      images: [
+        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80',
+        'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&q=80'
+      ],
       variants: [
         { sku: 'APX-HP-BLK', color: 'Midnight Black', size: 'Standard', stock: 20, price: 4999 },
         { sku: 'APX-HP-SLV', color: 'Matte Silver', size: 'Standard', stock: 15, price: 4999 }
@@ -109,11 +133,31 @@ export async function seedDatabase() {
       name: 'Custom 75% Mechanical Keyboard',
       description: 'Gasket-mounted hot-swappable tactile keyboard with factory-lubed switches and sound-dampening foam.',
       price: 6499,
+      mrp: 7999, // ~19% discount
+      brand: 'KeyCrafter',
+      highlights: [
+        '75% compact 82-key layout with CNC aluminum rotary knob',
+        'Gasket mount structure with 5-layer Poron acoustic dampening',
+        'Hot-swappable 3/5-pin PCB with south-facing RGB LEDs',
+        'Pre-lubed tactile mechanical switches and screw-in stabilizers',
+        'Tri-mode connectivity: 2.4GHz wireless, Bluetooth 5.1 & USB-C'
+      ],
+      specifications: [
+        { label: 'Layout', value: '75% ANSI' },
+        { label: 'Switch Type', value: 'Factory Lubed Tactile (45gf)' },
+        { label: 'Keycaps', value: 'Double-shot PBT Cherry Profile' },
+        { label: 'Battery', value: '4000 mAh rechargeable' },
+        { label: 'Case Material', value: 'Anodized Aluminum + ABS' },
+        { label: 'Compatibility', value: 'Windows, macOS, Linux, Android' }
+      ],
       category: 'Electronics',
       stock: 12,
       lowStockThreshold: 4,
       vendorId: vendor1._id,
-      images: ['https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&q=80'],
+      images: [
+        'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&q=80',
+        'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&q=80'
+      ],
       averageRating: 4.9,
       numReviews: 8
     },
@@ -121,11 +165,30 @@ export async function seedDatabase() {
       name: 'All-Terrain Trail Running Shoes',
       description: 'Breathable ripstop upper, carbon stability plate, and vibram mega-grip outsole for demanding trails.',
       price: 3299,
+      mrp: 4499, // ~27% discount
+      brand: 'TrailStride',
+      highlights: [
+        'Vibram MegaGrip high-traction 5mm multidirectional lugs',
+        'Dual-density EVA midsole with embedded carbon rock protection plate',
+        'Engineered hydrophobic ripstop mesh with reinforced TPU toe bumper',
+        'Quick-lace tension system with integrated lace garage'
+      ],
+      specifications: [
+        { label: 'Intended Use', value: 'Trail Running / Light Trekking' },
+        { label: 'Drop', value: '6 mm' },
+        { label: 'Upper', value: 'Recycled Poly Ripstop + TPU' },
+        { label: 'Outsole', value: 'Vibram MegaGrip Compound' },
+        { label: 'Closure', value: 'Speed Lacing' },
+        { label: 'Weight', value: '290g (Size UK 8)' }
+      ],
       category: 'Footwear',
-      stock: 4, // Below low stock threshold (FR-10 alert)
+      stock: 4, // Below low stock threshold
       lowStockThreshold: 5,
       vendorId: vendor2._id,
-      images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80'],
+      images: [
+        'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
+        'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=600&q=80'
+      ],
       variants: [
         { sku: 'TRL-SH-8', size: 'UK 8', color: 'Orange Flame', stock: 2, price: 3299 },
         { sku: 'TRL-SH-9', size: 'UK 9', color: 'Orange Flame', stock: 2, price: 3299 }
@@ -137,6 +200,20 @@ export async function seedDatabase() {
       name: 'Merino Wool Heavyweight Hoodie',
       description: '100% ethically sourced Australian merino wool, temperature regulating and odor-resistant.',
       price: 2499,
+      brand: 'Urban Silhouette',
+      highlights: [
+        '320 GSM 100% superfine Australian merino wool terry',
+        'Natural thermoregulation keeping you comfortable from 10°C to 25°C',
+        'Naturally antimicrobial and odor resistant for multi-day wear',
+        'Raglan sleeves with hidden zip media pocket on sleeve'
+      ],
+      specifications: [
+        { label: 'Material', value: '100% Merino Wool (19.5 micron)' },
+        { label: 'Fabric Weight', value: '320 GSM Heavyweight' },
+        { label: 'Fit', value: 'Relaxed Athleisure' },
+        { label: 'Care', value: 'Machine wash cold wool cycle, lay flat' },
+        { label: 'Origin', value: 'Knit in Tiruppur, India' }
+      ],
       category: 'Clothing',
       stock: 40,
       lowStockThreshold: 5,
@@ -149,6 +226,20 @@ export async function seedDatabase() {
       name: 'Waterproof Roll-Top Commuter Backpack',
       description: '28-liter capacity with magnetic buckle, dedicated padded 16-inch laptop compartment, and weatherproof zippers.',
       price: 1899,
+      brand: 'Nomad Crafted',
+      highlights: [
+        'Cordura 500D waterproof ballistic nylon shell',
+        'Fidlock magnetic quick-release chest buckle',
+        'Separate TSA-compliant suspended 16-inch laptop compartment',
+        'Ergonomic EVA molded back panel with airflow channels'
+      ],
+      specifications: [
+        { label: 'Capacity', value: '28 Liters (expandable to 32L)' },
+        { label: 'Dimensions', value: '48 x 30 x 16 cm' },
+        { label: 'Shell Material', value: 'Cordura 500D Nylon PU Coated' },
+        { label: 'Zippers', value: 'YKK AquaGuard Waterproof' },
+        { label: 'Laptop Sleeve', value: 'Fits up to MacBook Pro 16"' }
+      ],
       category: 'Accessories',
       stock: 22,
       lowStockThreshold: 5,
