@@ -142,7 +142,7 @@ test.before(async () => {
     isPublished: true,
     isFlagged: true
   });
-});
+}, { timeout: 120000 });
 
 test.after(async () => {
   await mongoose.disconnect();

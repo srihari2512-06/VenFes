@@ -1,5 +1,11 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config(); // Default to cwd
+dotenv.config({ path: path.resolve(__dirname, '../../.env') }); // server/.env
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') }); // root .env
 
 const required = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET'];
 for (const key of required) {

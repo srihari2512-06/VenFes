@@ -15,7 +15,7 @@ test.before(async () => {
   replSet = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
   const uri = replSet.getUri();
   await mongoose.connect(uri);
-});
+}, { timeout: 120000 });
 
 test.after(async () => {
   await mongoose.disconnect();

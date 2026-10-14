@@ -49,7 +49,12 @@ initSocket(io);
 
 // Start server
 async function start() {
-  await connectDB();
+  try {
+    await connectDB();
+    console.log('Connected to MongoDB successfully');
+  } catch (err) {
+    console.warn(`[WARN] MongoDB connection failed (${err.message}). Server started, but database operations will require MongoDB running at ${env.MONGODB_URI}.`);
+  }
   server.listen(env.PORT, () => {
     console.log(`Server listening on port ${env.PORT} in ${env.NODE_ENV} mode`);
   });
