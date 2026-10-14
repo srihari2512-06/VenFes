@@ -1,55 +1,111 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Search, Heart, Star, AlertTriangle, Check, ShoppingCart } from 'lucide-react';
+import { fetchWithCache, getCachedData } from '../utils/apiCache';
+import { SkeletonCard } from '../components/ui/Skeleton';
 
 export default function Catalog({ onSelectProduct, initialVendorId }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { addToCart } = useCart();
-  const { user, token } = useAuth();
+  const { token } = useAuth();
 
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState(['All', 'Electronics', 'Footwear', 'Clothing', 'Books', 'Accessories']);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const urlCategory = searchParams.get('category') || 'All';
+  const urlSearch = searchParams.get('q') || searchParams.get('search') || '';
+
+  const buildUrl = useCallback((cat, q) => {
+    let url = '/api/products?limit=24';
+    if (initialVendorId) url += `&vendorId=${encodeURIComponent(initialVendorId)}`;
+    if (cat && cat !== 'All') url += `&category=${encodeURIComponent(cat)}`;
+    if (q && q.trim()) url += `&search=${encodeURIComponent(q.trim())}`;
+    return url;
+  }, [initialVendorId]);
+
+  const activeUrl = useMemo(() => buildUrl(urlCategory, urlSearch), [buildUrl, urlCategory, urlSearch]);
+
+  // Synchronous cache read for instant rendering on navigation
+  const [products, setProducts] = useState(() => {
+    const cached = getCachedData(activeUrl);
+    return cached?.data?.products || [];
+  });
+
+  const categories = useMemo(() => [
+    'All', 'Electronics', 'Footwear', 'Clothing', 'Books', 'Accessories', 'Home & Kitchen'
+  ], []);
+
+  const [search, setSearch] = useState(urlSearch);
+  const [loading, setLoading] = useState(() => !getCachedData(activeUrl));
   const [error, setError] = useState('');
   const [selectedVariants, setSelectedVariants] = useState({});
   const [addingId, setAddingId] = useState(null);
   const [toast, setToast] = useState('');
 
+  // Sync internal search input with URL search param
   useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory, search]);
+    setSearch(urlSearch);
+  }, [urlSearch]);
 
-  async function fetchProducts() {
-    setLoading(true);
-    setError('');
-    try {
-      let url = '/api/products?limit=24';
-      if (initialVendorId) {
-        url += `&vendorId=${encodeURIComponent(initialVendorId)}`;
-      }
-      if (selectedCategory !== 'All') {
-        url += `&category=${encodeURIComponent(selectedCategory)}`;
-      }
-      if (search.trim()) {
-        url += `&search=${encodeURIComponent(search.trim())}`;
-      }
+  // Data fetching effect with caching and zero layout flicker
+  useEffect(() => {
+    let isMounted = true;
+    const cached = getCachedData(activeUrl);
 
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.success) {
-        setProducts(data.data.products);
-      } else {
-        setError(data.error?.message || 'Failed to load products');
-      }
-    } catch (err) {
-      setError('Network error loading products');
-    } finally {
+    if (cached?.data?.products) {
+      setProducts(cached.data.products);
       setLoading(false);
+      setError('');
+    } else {
+      setLoading(true);
+      setError('');
     }
+
+    fetchWithCache(activeUrl)
+      .then((data) => {
+        if (!isMounted) return;
+        if (data.success) {
+          setProducts(data.data.products);
+          setError('');
+        } else {
+          setError(data.error?.message || 'Failed to load products');
+        }
+      })
+      .catch(() => {
+        if (isMounted) setError('Network error loading products');
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeUrl]);
+
+  function handleCategoryClick(cat) {
+    const params = new URLSearchParams(location.search);
+    if (cat === 'All') {
+      params.delete('category');
+    } else {
+      params.set('category', cat);
+    }
+    const newQuery = params.toString();
+    navigate(`/products${newQuery ? `?${newQuery}` : ''}`);
+  }
+
+  function handleSearchSubmit(e) {
+    e.preventDefault();
+    const params = new URLSearchParams(location.search);
+    if (search.trim()) {
+      params.set('q', search.trim());
+    } else {
+      params.delete('q');
+      params.delete('search');
+    }
+    const newQuery = params.toString();
+    navigate(`/products${newQuery ? `?${newQuery}` : ''}`);
   }
 
   async function handleAddToCart(product, e) {
@@ -107,7 +163,7 @@ export default function Catalog({ onSelectProduct, initialVendorId }) {
           </div>
 
           {/* Search bar */}
-          <div style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>
+          <form onSubmit={handleSearchSubmit} style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>
             <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input
               type="text"
@@ -116,7 +172,7 @@ export default function Catalog({ onSelectProduct, initialVendorId }) {
               onChange={(e) => setSearch(e.target.value)}
               style={{ width: '100%', paddingLeft: '38px' }}
             />
-          </div>
+          </form>
         </div>
 
         {/* Category Pills */}
@@ -124,8 +180,8 @@ export default function Catalog({ onSelectProduct, initialVendorId }) {
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`btn btn-sm ${selectedCategory === cat ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => handleCategoryClick(cat)}
+              className={`btn btn-sm ${urlCategory.toLowerCase() === cat.toLowerCase() ? 'btn-primary' : 'btn-secondary'}`}
               style={{ borderRadius: '9999px', padding: '6px 14px' }}
             >
               {cat}
@@ -134,23 +190,24 @@ export default function Catalog({ onSelectProduct, initialVendorId }) {
         </div>
       </div>
 
-      {/* Loading State (NFR-12) */}
-      {loading && (
-        <div className="state-loading">
-          <div className="spinner"></div>
-          <p>Loading marketplace catalog...</p>
+      {/* Loading Skeletons when no products in cache */}
+      {loading && products.length === 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <SkeletonCard key={idx} />
+          ))}
         </div>
       )}
 
-      {/* Error State (NFR-12) */}
+      {/* Error State */}
       {!loading && error && (
         <div className="state-error">
           <p><strong>Error:</strong> {error}</p>
-          <button onClick={fetchProducts} className="btn btn-secondary btn-sm" style={{ marginTop: '8px' }}>Retry</button>
+          <button onClick={() => navigate(0)} className="btn btn-secondary btn-sm" style={{ marginTop: '8px' }}>Retry</button>
         </div>
       )}
 
-      {/* Empty State (NFR-12) */}
+      {/* Empty State */}
       {!loading && !error && products.length === 0 && (
         <div className="state-empty card">
           <h3>No products found</h3>
@@ -159,7 +216,7 @@ export default function Catalog({ onSelectProduct, initialVendorId }) {
       )}
 
       {/* Product Grid */}
-      {!loading && !error && products.length > 0 && (
+      {products.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
           {products.map((p) => {
             const hasVariants = p.variants && p.variants.length > 0;

@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 
 // Pages
+import HomePage from './pages/HomePage';
 import Catalog from './pages/Catalog';
 import ProductDetail from './pages/ProductDetail';
 import CartPage from './pages/CartPage';
@@ -17,6 +18,10 @@ import StorePage from './pages/StorePage';
 import VendorPortal from './pages/VendorPortal';
 import AdminPortal from './pages/AdminPortal';
 import AuthPages from './pages/AuthPages';
+import CouponsPage from './pages/CouponsPage';
+import GiftCardsPage from './pages/GiftCardsPage';
+import OrderTrackingPage from './pages/OrderTrackingPage';
+import BrowsingHistoryPage from './pages/BrowsingHistoryPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export function AppRoutes() {
@@ -28,11 +33,16 @@ export function AppRoutes() {
       <main style={{ flex: 1 }}>
         <Routes>
           {/* Public Storefront Routes */}
-          <Route path="/" element={<Catalog />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<Catalog />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/store/:storeId" element={<StorePage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/coupons" element={<CouponsPage />} />
+          <Route path="/gift-cards" element={<GiftCardsPage />} />
+          <Route path="/track" element={<OrderTrackingPage />} />
+          <Route path="/track/:orderId" element={<OrderTrackingPage />} />
+          <Route path="/history" element={<BrowsingHistoryPage />} />
 
           {/* Auth Routes */}
           <Route path="/login" element={<AuthPages initialMode="login" />} />

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, Store, CreditCard, ShieldCheck, CheckCircle2, ShoppingBag } from 'lucide-react';
+import { Trash2, Store, CreditCard, ShieldCheck, CheckCircle2, ShoppingBag, Tag, Gift, Check } from 'lucide-react';
+import { validateCoupon } from '../utils/coupons';
 
 export default function CartPage({ onBrowse, onOrderComplete }) {
   const navigate = useNavigate();
@@ -21,6 +22,16 @@ export default function CartPage({ onBrowse, onOrderComplete }) {
   const [submitting, setSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
   const [error, setError] = useState('');
+
+  // Coupon & Gift Card State
+  const [couponCode, setCouponCode] = useState(localStorage.getItem('venfes_applied_coupon') || '');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
+  const [couponSuccess, setCouponSuccess] = useState('');
+  const [useGiftCard, setUseGiftCard] = useState(false);
+  const [giftCardBalance, setGiftCardBalance] = useState(
+    Number(localStorage.getItem('venfes_gift_card_balance') || 1000)
+  );
 
   if (!user) {
     return (
@@ -75,9 +86,22 @@ export default function CartPage({ onBrowse, onOrderComplete }) {
             ))}
           </div>
 
-          <button onClick={handleOrderComplete} className="btn btn-primary" style={{ width: '100%' }}>
-            View in My Orders
-          </button>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+            <Link
+              to={`/track/${completedOrder.order?.orderNumber}`}
+              className="btn btn-primary"
+              style={{ flex: 1, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+            >
+              <span>📍 Live Track Order</span>
+            </Link>
+            <button
+              onClick={handleOrderComplete}
+              className="btn btn-secondary"
+              style={{ flex: 1, padding: '12px' }}
+            >
+              View in My Orders
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -115,6 +139,34 @@ export default function CartPage({ onBrowse, onOrderComplete }) {
     totalAmount += itemSubtotal;
     vendorGroups[vendorId].items.push({ ...item, itemSubtotal });
   });
+
+  function handleApplyCoupon(e) {
+    if (e) e.preventDefault();
+    setCouponError('');
+    setCouponSuccess('');
+    const res = validateCoupon(couponCode, totalAmount);
+    if (!res.valid) {
+      setCouponError(res.message);
+      setAppliedCoupon(null);
+    } else {
+      setAppliedCoupon(res);
+      setCouponSuccess(res.message);
+      localStorage.setItem('venfes_applied_coupon', res.coupon.code);
+    }
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null);
+    setCouponSuccess('');
+    setCouponError('');
+    setCouponCode('');
+    localStorage.removeItem('venfes_applied_coupon');
+  }
+
+  const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const afterCouponTotal = Math.max(0, totalAmount - couponDiscount);
+  const giftCardDeduction = useGiftCard ? Math.min(giftCardBalance, afterCouponTotal) : 0;
+  const finalPayable = Math.max(0, afterCouponTotal - giftCardDeduction);
 
   async function handleCheckout() {
     setSubmitting(true);
@@ -155,6 +207,14 @@ export default function CartPage({ onBrowse, onOrderComplete }) {
 
       const confirmData = await confirmRes.json();
       if (!confirmRes.ok) throw new Error(confirmData.error?.message || 'Payment confirmation failed');
+
+      if (useGiftCard && giftCardDeduction > 0) {
+        const remaining = Math.max(0, giftCardBalance - giftCardDeduction);
+        setGiftCardBalance(remaining);
+        localStorage.setItem('venfes_gift_card_balance', remaining.toString());
+      }
+      localStorage.removeItem('venfes_applied_coupon');
+      setAppliedCoupon(null);
 
       clearCart();
       setCompletedOrder({ order: confirmData.data.order, subOrders });
@@ -280,9 +340,124 @@ export default function CartPage({ onBrowse, onOrderComplete }) {
               <span style={{ color: 'var(--text-muted)' }}>Platform Delivery:</span>
               <span style={{ color: 'var(--success)' }}>FREE</span>
             </div>
+
+            {/* Coupons Section */}
+            <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <Tag size={15} color="var(--primary)" />
+                <span style={{ fontSize: '13px', fontWeight: '600' }}>Apply Promo Coupon</span>
+              </div>
+
+              {appliedCoupon ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--green-light)',
+                    border: '1px solid #86efac',
+                    borderRadius: 'var(--radius)',
+                    fontSize: '12px'
+                  }}
+                >
+                  <div>
+                    <strong style={{ color: 'var(--green)' }}>{appliedCoupon.coupon.code}</strong> Applied!
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{appliedCoupon.coupon.title}</div>
+                  </div>
+                  <button
+                    onClick={handleRemoveCoupon}
+                    style={{ background: 'none', color: 'var(--danger)', fontSize: '11px', fontWeight: 'bold' }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <form onSubmit={handleApplyCoupon} style={{ display: 'flex', gap: '6px' }}>
+                    <input
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="e.g. FESTIVE20"
+                      style={{ flex: 1, padding: '7px 10px', fontSize: '12px', textTransform: 'uppercase' }}
+                    />
+                    <button type="submit" className="btn btn-secondary btn-sm" style={{ fontSize: '12px', padding: '7px 12px' }}>
+                      Apply
+                    </button>
+                  </form>
+                  {couponError && <div style={{ color: 'var(--danger)', fontSize: '11px', marginTop: '4px' }}>{couponError}</div>}
+                  {/* Quick coupon chips */}
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
+                    {['WELCOME50', 'FESTIVE20', 'TECH10'].map(code => (
+                      <button
+                        key={code}
+                        type="button"
+                        onClick={() => {
+                          setCouponCode(code);
+                          const res = validateCoupon(code, totalAmount);
+                          if (res.valid) {
+                            setAppliedCoupon(res);
+                            setCouponSuccess(res.message);
+                            setCouponError('');
+                          } else {
+                            setCouponError(res.message);
+                          }
+                        }}
+                        style={{
+                          fontSize: '10px',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          border: '1px dashed var(--primary)',
+                          background: 'none',
+                          color: 'var(--primary)'
+                        }}
+                      >
+                        + {code}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Gift Card Wallet Section */}
+            <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={useGiftCard}
+                    onChange={(e) => setUseGiftCard(e.target.checked)}
+                    disabled={giftCardBalance <= 0}
+                  />
+                  <span>
+                    Use Gift Card Balance (₹{giftCardBalance.toLocaleString()})
+                  </span>
+                </label>
+                <Link to="/gift-cards" style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: '600' }}>
+                  Manage →
+                </Link>
+              </div>
+            </div>
+
+            {/* Discount Summary Lines */}
+            {couponDiscount > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '13px', color: 'var(--green)' }}>
+                <span>Coupon Discount ({appliedCoupon?.coupon?.code}):</span>
+                <span>- ₹{couponDiscount.toLocaleString()}</span>
+              </div>
+            )}
+            {giftCardDeduction > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '13px', color: 'var(--primary)' }}>
+                <span>Gift Card Balance Applied:</span>
+                <span>- ₹{giftCardDeduction.toLocaleString()}</span>
+              </div>
+            )}
+
+            {/* Final Total */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)', fontSize: '18px', fontWeight: 'bold' }}>
-              <span>Grand Total:</span>
-              <span style={{ color: 'var(--primary)' }}>₹{totalAmount.toLocaleString()}</span>
+              <span>Payable Total:</span>
+              <span style={{ color: 'var(--primary)' }}>₹{finalPayable.toLocaleString()}</span>
             </div>
 
             <div style={{ margin: '16px 0', padding: '10px', backgroundColor: '#eff6ff', borderRadius: 'var(--radius)', fontSize: '12px', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -294,10 +469,10 @@ export default function CartPage({ onBrowse, onOrderComplete }) {
               disabled={submitting}
               onClick={handleCheckout}
               className="btn btn-primary"
-              style={{ width: '100%', padding: '12px', fontSize: '15px' }}
+              style={{ width: '100%', padding: '12px', fontSize: '15px', fontWeight: 'bold' }}
             >
               <CreditCard size={18} />
-              <span>{submitting ? 'Executing Atomic Checkout...' : `Pay ₹${totalAmount.toLocaleString()} & Place Order`}</span>
+              <span>{submitting ? 'Executing Atomic Checkout...' : `Pay ₹${finalPayable.toLocaleString()} & Place Order`}</span>
             </button>
           </div>
         </div>

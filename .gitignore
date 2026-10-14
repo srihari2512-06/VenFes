@@ -8,3 +8,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .DS_Store
+
+# Presentations and Review Decks
+*.pptx
+*.ppt
+
+# Screenshots & diagram images
+screenshots/
+*.png
+
+# Presentation build scripts and inspection dumps
+generate_venfes_presentation.py
+build_venfes_presentation.py
+*.dump.txt
+*dump*.txt
+s1_tb.txt
+

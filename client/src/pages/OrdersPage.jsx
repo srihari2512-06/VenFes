@@ -100,6 +100,13 @@ export default function OrdersPage({ onSelectProduct }) {
                   <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                     {ord.subOrderIds?.length} Vendor Sub-Orders
                   </div>
+                  <Link
+                    to={`/track/${ord.orderNumber}`}
+                    className="btn btn-secondary btn-sm"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px', fontSize: '11px', color: 'var(--primary)' }}
+                  >
+                    <span>📍 Track Package</span>
+                  </Link>
                 </div>
               </div>
 

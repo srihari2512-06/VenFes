@@ -3,6 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Star, ShieldCheck, Flag, ArrowLeft, ShoppingCart, Check, AlertCircle } from 'lucide-react';
+import PriceHistoryChart from '../components/ui/PriceHistoryChart';
+import PriceComparisonTable from '../components/ui/PriceComparisonTable';
+import { addToBrowsingHistory } from '../utils/history';
 
 export default function ProductDetail({ productId, onBack }) {
   const params = useParams();
@@ -45,6 +48,7 @@ export default function ProductDetail({ productId, onBack }) {
 
       if (prodData.success) {
         setProduct(prodData.data.product);
+        addToBrowsingHistory(prodData.data.product);
         if (prodData.data.product.variants?.length > 0) {
           setSelectedVariant(prodData.data.product.variants[0]);
         }
@@ -224,6 +228,12 @@ export default function ProductDetail({ productId, onBack }) {
           </button>
         </div>
       </div>
+
+      {/* Multi-Store Competitor Price Comparison */}
+      <PriceComparisonTable product={product} currentPrice={currentPrice} />
+
+      {/* 60-Day Price Trend History Chart */}
+      <PriceHistoryChart product={product} currentPrice={currentPrice} />
 
       {/* Verified Reviews Section (FR-31) */}
       <div className="card" style={{ marginTop: '24px' }}>

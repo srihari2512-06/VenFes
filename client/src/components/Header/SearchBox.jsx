@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Clock, X, ArrowRight, Tag } from 'lucide-react';
 import { formatINR } from '../../utils/formatters';
+import { fetchWithCache } from '../../utils/apiCache';
 
 const RECENT_KEY = 'venfes_recent_searches';
 
@@ -76,8 +77,7 @@ export default function SearchBox({ className = '', style = {} }) {
 
     debounceTimer.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/products/suggest?q=${encodeURIComponent(query.trim())}`);
-        const data = await res.json();
+        const data = await fetchWithCache(`/api/products/suggest?q=${encodeURIComponent(query.trim())}`);
         if (data.success) {
           setSuggestions(data.data);
           setActiveIndex(-1);

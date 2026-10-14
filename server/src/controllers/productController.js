@@ -261,6 +261,8 @@ export async function getProducts(req, res, next) {
                   averageRating: 1,
                   numReviews: 1,
                   discountPercent: 1,
+                  priceHistory: 1,
+                  competitorPrices: 1,
                   createdAt: 1,
                   updatedAt: 1,
                   vendorId: {

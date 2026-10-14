@@ -17,17 +17,10 @@ import { useCart } from '../../context/CartContext';
 import SearchBox from './SearchBox';
 import PincodeModal from './PincodeModal';
 import MobileDrawer from './MobileDrawer';
+import CategoryNavStrip from './CategoryNavStrip';
+import { fetchWithCache, getCachedData } from '../../utils/apiCache';
 
-const CATEGORIES = [
-  { label: 'All Categories', path: '/products' },
-  { label: 'Electronics', path: '/products?category=Electronics' },
-  { label: 'Footwear', path: '/products?category=Footwear' },
-  { label: 'Clothing', path: '/products?category=Clothing' },
-  { label: 'Books', path: '/products?category=Books' },
-  { label: 'Accessories', path: '/products?category=Accessories' }
-];
-
-export default function Header() {
+function HeaderComponent() {
   const { user, logout, isVendor, isAdmin } = useAuth();
   const { itemCount } = useCart();
   const location = useLocation();
@@ -35,10 +28,8 @@ export default function Header() {
 
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [showCategoryStrip, setShowCategoryStrip] = useState(true);
   const [wishlistCount, setWishlistCount] = useState(0);
 
-  const lastScrollY = useRef(0);
   const accountMenuRef = useRef(null);
 
   // Close account menu on outside click
@@ -52,15 +43,18 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch wishlist count if logged in
+  // Fetch wishlist count only when authenticated user changes (removes redundant API call on route change)
   useEffect(() => {
-    if (user) {
-      fetch('/api/engagement/wishlist', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    if (user?._id) {
+      const cached = getCachedData('/api/engagement/wishlist');
+      if (cached?.data?.wishlist) {
+        setWishlistCount(cached.data.wishlist.products?.length || 0);
+      }
+      fetchWithCache('/api/engagement/wishlist', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('venfes_token')}` }
       })
-        .then(res => res.json())
         .then(data => {
-          if (data.success && data.data.wishlist) {
+          if (data?.success && data.data?.wishlist) {
             setWishlistCount(data.data.wishlist.products?.length || 0);
           }
         })
@@ -68,23 +62,7 @@ export default function Header() {
     } else {
       setWishlistCount(0);
     }
-  }, [user, location.pathname]);
-
-  // Scroll listener: second row hides on scroll down, returns on scroll up
-  useEffect(() => {
-    function handleScroll() {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > 100 && currentScrollY > lastScrollY.current) {
-        setShowCategoryStrip(false);
-      } else {
-        setShowCategoryStrip(true);
-      }
-      lastScrollY.current = currentScrollY;
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [user?._id]);
 
   // If in Vendor or Admin portal, render clean portal header
   const isPortal = location.pathname.startsWith('/vendor') || location.pathname.startsWith('/admin');
@@ -104,7 +82,7 @@ export default function Header() {
       <MobileDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       {/* Tier 1: Main Top Bar */}
-      <div style={{ borderBottom: showCategoryStrip && !isPortal ? '1px solid var(--border-subtle)' : 'none' }}>
+      <div style={{ borderBottom: !isPortal ? '1px solid var(--border-subtle)' : 'none' }}>
         <div
           className="container"
           style={{
@@ -229,15 +207,20 @@ export default function Header() {
                     zIndex: 1100
                   }}
                 >
-                  <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px' }}>
-                    <strong>{user.name}</strong>
+                  <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+                      <strong>{user.name}</strong>
+                      <span className="badge badge-accent" style={{ textTransform: 'uppercase', fontSize: '9px', fontWeight: 'bold' }}>
+                        {user.role}
+                      </span>
+                    </div>
                     <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{user.email}</div>
                   </div>
 
                   <Link
                     to="/account"
                     onClick={() => setAccountMenuOpen(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', fontSize: '13px', color: 'var(--text-main)' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--text-main)' }}
                   >
                     <User size={15} /> My Profile
                   </Link>
@@ -245,15 +228,47 @@ export default function Header() {
                   <Link
                     to="/orders"
                     onClick={() => setAccountMenuOpen(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', fontSize: '13px', color: 'var(--text-main)' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--text-main)' }}
                   >
                     <Package size={15} /> My Orders
                   </Link>
 
                   <Link
+                    to="/track"
+                    onClick={() => setAccountMenuOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--primary)', fontWeight: '600' }}
+                  >
+                    <span>📍</span> Live Order Tracking
+                  </Link>
+
+                  <Link
+                    to="/coupons"
+                    onClick={() => setAccountMenuOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--text-main)' }}
+                  >
+                    <span>🎟️</span> Coupons & Deals
+                  </Link>
+
+                  <Link
+                    to="/gift-cards"
+                    onClick={() => setAccountMenuOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--text-main)' }}
+                  >
+                    <span>🎁</span> Gift Cards & Balance
+                  </Link>
+
+                  <Link
+                    to="/history"
+                    onClick={() => setAccountMenuOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--text-main)' }}
+                  >
+                    <span>🕒</span> Browsing History
+                  </Link>
+
+                  <Link
                     to="/wishlist"
                     onClick={() => setAccountMenuOpen(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', fontSize: '13px', color: 'var(--text-main)' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--text-main)' }}
                   >
                     <Heart size={15} /> Wishlist ({wishlistCount})
                   </Link>
@@ -262,7 +277,7 @@ export default function Header() {
                     <Link
                       to="/register"
                       onClick={() => setAccountMenuOpen(false)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', fontSize: '13px', color: 'var(--accent)', fontWeight: '500' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--accent)', fontWeight: '600' }}
                     >
                       <Store size={15} /> Sell on Venfes
                     </Link>
@@ -272,9 +287,9 @@ export default function Header() {
                     <Link
                       to="/vendor"
                       onClick={() => setAccountMenuOpen(false)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', fontSize: '13px', color: 'var(--primary)', fontWeight: '500' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--primary)', fontWeight: '600', backgroundColor: 'var(--primary-light)' }}
                     >
-                      <Store size={15} /> Vendor Portal
+                      <Store size={15} /> Vendor Portal Dashboard
                     </Link>
                   )}
 
@@ -282,9 +297,9 @@ export default function Header() {
                     <Link
                       to="/admin"
                       onClick={() => setAccountMenuOpen(false)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', fontSize: '13px', color: 'var(--success)', fontWeight: '500' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--success)', fontWeight: '600', backgroundColor: '#f0fdf4' }}
                     >
-                      <Shield size={15} /> Admin Portal
+                      <Shield size={15} /> Admin Portal Dashboard
                     </Link>
                   )}
 
@@ -420,52 +435,8 @@ export default function Header() {
         )}
       </div>
 
-      {/* Tier 2: Category Strip (Hidden on scroll-down, shown on scroll-up) */}
-      {!isPortal && showCategoryStrip && (
-        <div
-          style={{
-            backgroundColor: 'var(--surface-alt)',
-            borderBottom: '1px solid var(--border)',
-            overflowX: 'auto',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <div
-            className="container"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '6px 16px'
-            }}
-          >
-            {CATEGORIES.map((cat) => {
-              const currentCategoryParam = new URLSearchParams(location.search).get('category') || '';
-              const isActive = (cat.label === 'All Categories' && (!currentCategoryParam || currentCategoryParam === 'All')) ||
-                currentCategoryParam.toLowerCase() === cat.label.toLowerCase();
-
-              return (
-                <NavLink
-                  key={cat.label}
-                  to={cat.path}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '13px',
-                    fontWeight: isActive ? '700' : '500',
-                    color: isActive ? 'var(--primary)' : 'var(--text-main)',
-                    borderRadius: 'var(--radius)',
-                    backgroundColor: isActive ? 'var(--primary-light)' : 'transparent',
-                    textDecoration: 'none',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {cat.label}
-                </NavLink>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Tier 2: Category Strip (Memoized, stably rendered without layout shifts or unmounting) */}
+      {!isPortal && <CategoryNavStrip isVisible={!isPortal} />}
 
       {/* Responsive styles */}
       <style>{`
@@ -487,3 +458,5 @@ export default function Header() {
     </header>
   );
 }
+
+export default React.memo(HeaderComponent);

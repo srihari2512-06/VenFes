@@ -72,7 +72,23 @@ const productSchema = new mongoose.Schema({
   isPublished: { type: Boolean, default: true, index: true },
   isFlagged: { type: Boolean, default: false, index: true },
   averageRating: { type: Number, default: 0 },
-  numReviews: { type: Number, default: 0 }
+  numReviews: { type: Number, default: 0 },
+  priceHistory: {
+    type: [{
+      date: { type: String, required: true },
+      price: { type: Number, required: true }
+    }],
+    default: []
+  },
+  competitorPrices: {
+    type: [{
+      store: { type: String, required: true },
+      price: { type: Number, required: true },
+      inStock: { type: Boolean, default: true },
+      delivery: { type: String, default: '2-3 Days' }
+    }],
+    default: []
+  }
 }, {
   timestamps: true
 });
