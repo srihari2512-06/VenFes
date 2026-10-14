@@ -71,16 +71,46 @@ export async function getProductById(req, res, next) {
 
 export async function createProduct(req, res, next) {
   try {
-    const { name, description, price, category, stock, lowStockThreshold, images, variants } = req.body;
+    const { name, description, price, mrp, brand, highlights, specifications, category, stock, lowStockThreshold, images, variants } = req.body;
 
     if (!name || !description || price === undefined || !category) {
       throw new AppError('Name, description, price, and category are required', 400, 'VALIDATION_ERROR');
     }
 
+    const numPrice = Number(price);
+    let numMrp = undefined;
+    if (mrp !== undefined && mrp !== null && mrp !== '') {
+      numMrp = Number(mrp);
+      if (isNaN(numMrp) || numMrp < numPrice) {
+        throw new AppError('MRP must be greater than or equal to price', 400, 'VALIDATION_ERROR');
+      }
+    }
+
+    if (highlights && Array.isArray(highlights)) {
+      if (highlights.length > 6) {
+        throw new AppError('Highlights cannot exceed 6 items', 400, 'VALIDATION_ERROR');
+      }
+      if (highlights.some(h => typeof h === 'string' && h.length > 120)) {
+        throw new AppError('Each highlight must be 120 characters or fewer', 400, 'VALIDATION_ERROR');
+      }
+    }
+
+    if (specifications && Array.isArray(specifications) && specifications.length > 15) {
+      throw new AppError('Specifications cannot exceed 15 items', 400, 'VALIDATION_ERROR');
+    }
+
+    if (images && Array.isArray(images) && images.length > 6) {
+      throw new AppError('A product can have at most 6 images', 400, 'VALIDATION_ERROR');
+    }
+
     const product = await Product.create({
       name: name.trim(),
       description: description.trim(),
-      price: Number(price),
+      price: numPrice,
+      mrp: numMrp,
+      brand: brand ? brand.trim() : '',
+      highlights: Array.isArray(highlights) ? highlights : [],
+      specifications: Array.isArray(specifications) ? specifications : [],
       category: category.trim(),
       stock: Number(stock || 0),
       lowStockThreshold: Number(lowStockThreshold || 5),
@@ -106,7 +136,31 @@ export async function updateProduct(req, res, next) {
       throw new AppError('Forbidden: you do not own this product', 403, 'FORBIDDEN');
     }
 
-    const allowedUpdates = ['name', 'description', 'price', 'category', 'stock', 'lowStockThreshold', 'images', 'variants', 'isPublished'];
+    const targetPrice = req.body.price !== undefined ? Number(req.body.price) : product.price;
+    const targetMrp = req.body.mrp !== undefined ? (req.body.mrp !== null && req.body.mrp !== '' ? Number(req.body.mrp) : undefined) : product.mrp;
+
+    if (targetMrp !== undefined && targetMrp !== null && targetMrp < targetPrice) {
+      throw new AppError('MRP must be greater than or equal to price', 400, 'VALIDATION_ERROR');
+    }
+
+    if (req.body.highlights && Array.isArray(req.body.highlights)) {
+      if (req.body.highlights.length > 6) {
+        throw new AppError('Highlights cannot exceed 6 items', 400, 'VALIDATION_ERROR');
+      }
+      if (req.body.highlights.some(h => typeof h === 'string' && h.length > 120)) {
+        throw new AppError('Each highlight must be 120 characters or fewer', 400, 'VALIDATION_ERROR');
+      }
+    }
+
+    if (req.body.specifications && Array.isArray(req.body.specifications) && req.body.specifications.length > 15) {
+      throw new AppError('Specifications cannot exceed 15 items', 400, 'VALIDATION_ERROR');
+    }
+
+    if (req.body.images && Array.isArray(req.body.images) && req.body.images.length > 6) {
+      throw new AppError('A product can have at most 6 images', 400, 'VALIDATION_ERROR');
+    }
+
+    const allowedUpdates = ['name', 'description', 'price', 'mrp', 'brand', 'highlights', 'specifications', 'category', 'stock', 'lowStockThreshold', 'images', 'variants', 'isPublished'];
     for (const key of allowedUpdates) {
       if (req.body[key] !== undefined) {
         product[key] = req.body[key];

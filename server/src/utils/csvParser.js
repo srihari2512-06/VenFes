@@ -12,6 +12,10 @@ export function parseAndValidateProductCSV(csvContent, vendorId) {
   const categoryIdx = header.indexOf('category');
   const stockIdx = header.indexOf('stock');
   const descIdx = header.indexOf('description');
+  const mrpIdx = header.indexOf('mrp');
+  const brandIdx = header.indexOf('brand');
+  const highlightsIdx = header.indexOf('highlights');
+  const specsIdx = header.indexOf('specifications');
 
   if (nameIdx === -1 || priceIdx === -1 || categoryIdx === -1 || stockIdx === -1) {
     return {
@@ -28,7 +32,6 @@ export function parseAndValidateProductCSV(csvContent, vendorId) {
 
   rowsToProcess.forEach((line, index) => {
     const rowNumber = index + 2; // 1-indexed including header
-    // Simple split respecting basic comma separation
     const cols = line.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
 
     const name = cols[nameIdx];
@@ -59,10 +62,54 @@ export function parseAndValidateProductCSV(csvContent, vendorId) {
       return;
     }
 
+    let mrp = undefined;
+    if (mrpIdx !== -1 && cols[mrpIdx] !== undefined && cols[mrpIdx] !== '') {
+      const parsedMrp = parseFloat(cols[mrpIdx]);
+      if (isNaN(parsedMrp) || parsedMrp < price) {
+        errors.push({ row: rowNumber, reason: `MRP (${cols[mrpIdx]}) must be greater than or equal to price (${price})` });
+        return;
+      }
+      mrp = parsedMrp;
+    }
+
+    const brand = (brandIdx !== -1 && cols[brandIdx]) ? cols[brandIdx].slice(0, 60).trim() : '';
+
+    let highlights = [];
+    if (highlightsIdx !== -1 && cols[highlightsIdx]) {
+      highlights = cols[highlightsIdx].split('|').map(h => h.trim()).filter(Boolean);
+      if (highlights.length > 6) {
+        errors.push({ row: rowNumber, reason: 'Highlights cannot exceed 6 items' });
+        return;
+      }
+      if (highlights.some(h => h.length > 120)) {
+        errors.push({ row: rowNumber, reason: 'Each highlight must be 120 characters or fewer' });
+        return;
+      }
+    }
+
+    let specifications = [];
+    if (specsIdx !== -1 && cols[specsIdx]) {
+      const specPairs = cols[specsIdx].split('|').map(s => s.trim()).filter(Boolean);
+      if (specPairs.length > 15) {
+        errors.push({ row: rowNumber, reason: 'Specifications cannot exceed 15 items' });
+        return;
+      }
+      for (const pair of specPairs) {
+        const [label, ...valParts] = pair.split(':');
+        if (label && valParts.length > 0) {
+          specifications.push({ label: label.trim(), value: valParts.join(':').trim() });
+        }
+      }
+    }
+
     imported.push({
       name,
       description,
       price,
+      mrp,
+      brand,
+      highlights,
+      specifications,
       category,
       stock,
       vendorId,

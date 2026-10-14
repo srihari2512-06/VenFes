@@ -6,7 +6,8 @@ const vendorProfileSchema = new mongoose.Schema({
   storeDescription: { type: String, trim: true },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   kycDocumentUrl: { type: String, default: '' },
-  rejectionReason: { type: String, default: '' }
+  rejectionReason: { type: String, default: '' },
+  handlingDays: { type: Number, min: 0, max: 7, default: 2 }
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({

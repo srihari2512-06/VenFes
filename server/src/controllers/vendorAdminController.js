@@ -68,13 +68,16 @@ export async function updateVendorStatus(req, res, next) {
 
 export async function applyVendorKYC(req, res, next) {
   try {
-    const { storeName, storeDescription, kycDocumentUrl } = req.body;
+    const { storeName, storeDescription, kycDocumentUrl, handlingDays } = req.body;
     const user = await User.findById(req.user._id);
 
     user.vendorProfile = user.vendorProfile || {};
     if (storeName) user.vendorProfile.storeName = storeName.trim();
     if (storeDescription) user.vendorProfile.storeDescription = storeDescription.trim();
     if (kycDocumentUrl) user.vendorProfile.kycDocumentUrl = kycDocumentUrl;
+    if (handlingDays !== undefined) {
+      user.vendorProfile.handlingDays = Math.min(7, Math.max(0, parseInt(handlingDays, 10) || 2));
+    }
     user.vendorProfile.status = 'pending';
 
     await user.save();

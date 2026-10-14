@@ -10,6 +10,7 @@ export default function VendorPortal() {
   const [kycStoreName, setKycStoreName] = useState(user?.vendorProfile?.storeName || '');
   const [kycDesc, setKycDesc] = useState(user?.vendorProfile?.storeDescription || '');
   const [kycFile, setKycFile] = useState('mock_business_license.pdf');
+  const [kycHandlingDays, setKycHandlingDays] = useState(user?.vendorProfile?.handlingDays ?? 2);
   const [kycStatus, setKycStatus] = useState(user?.vendorProfile?.status || 'pending');
 
   // Products state
@@ -20,9 +21,13 @@ export default function VendorPortal() {
     name: '',
     description: '',
     price: '',
+    mrp: '',
+    brand: '',
     category: 'Electronics',
     stock: '',
     lowStockThreshold: 5,
+    highlights: ['', '', ''],
+    specifications: [{ label: '', value: '' }],
     images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80'],
     variants: [{ sku: 'VAR-1', size: 'M', color: 'Black', stock: 10, price: '' }]
   });
@@ -89,14 +94,24 @@ export default function VendorPortal() {
 
   async function handleCreateProduct(e) {
     e.preventDefault();
+    if (newProd.mrp && Number(newProd.mrp) < Number(newProd.price)) {
+      return alert('MRP must be greater than or equal to selling price');
+    }
     try {
+      const filteredHighlights = (newProd.highlights || []).map(h => h.trim()).filter(Boolean);
+      const filteredSpecs = (newProd.specifications || []).filter(s => s.label.trim() && s.value.trim());
+
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           ...newProd,
           price: Number(newProd.price),
+          mrp: newProd.mrp ? Number(newProd.mrp) : undefined,
           stock: Number(newProd.stock),
+          brand: newProd.brand?.trim() || '',
+          highlights: filteredHighlights,
+          specifications: filteredSpecs,
           variants: newProd.variants.map(v => ({ ...v, stock: Number(v.stock), price: v.price ? Number(v.price) : undefined }))
         })
       });
@@ -149,7 +164,8 @@ export default function VendorPortal() {
         body: JSON.stringify({
           storeName: kycStoreName,
           storeDescription: kycDesc,
-          kycDocumentUrl: kycFile
+          kycDocumentUrl: kycFile,
+          handlingDays: Number(kycHandlingDays)
         })
       });
       const data = await res.json();
@@ -194,6 +210,10 @@ export default function VendorPortal() {
                 <div>
                   <label style={{ fontSize: '12px', display: 'block', color: '#92400e' }}>Description:</label>
                   <input value={kycDesc} onChange={(e) => setKycDesc(e.target.value)} required />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', display: 'block', color: '#92400e' }}>Handling Days (0-7):</label>
+                  <input type="number" min="0" max="7" value={kycHandlingDays} onChange={(e) => setKycHandlingDays(e.target.value)} style={{ width: '80px' }} required />
                 </div>
                 <button type="submit" className="btn btn-primary btn-sm">Submit KYC Details</button>
               </form>
@@ -301,23 +321,130 @@ export default function VendorPortal() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>Price (₹):</label>
+                  <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>Selling Price (₹):</label>
                   <input type="number" value={newProd.price} onChange={(e) => setNewProd({ ...newProd, price: e.target.value })} required style={{ width: '100%' }} />
                 </div>
+                <div>
+                  <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>MRP (₹, optional):</label>
+                  <input type="number" value={newProd.mrp} onChange={(e) => setNewProd({ ...newProd, mrp: e.target.value })} placeholder="Must be ≥ Price" style={{ width: '100%' }} />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>Brand (optional, max 60 chars):</label>
+                <input value={newProd.brand} maxLength={60} onChange={(e) => setNewProd({ ...newProd, brand: e.target.value })} placeholder="e.g. Apex Audio" style={{ width: '100%' }} />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>Stock Quantity:</label>
                   <input type="number" value={newProd.stock} onChange={(e) => setNewProd({ ...newProd, stock: e.target.value })} required style={{ width: '100%' }} />
                 </div>
+                <div>
+                  <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>Category:</label>
+                  <select value={newProd.category} onChange={(e) => setNewProd({ ...newProd, category: e.target.value })} style={{ width: '100%' }}>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Footwear">Footwear</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Books">Books</option>
+                    <option value="Accessories">Accessories</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>Category:</label>
-                <select value={newProd.category} onChange={(e) => setNewProd({ ...newProd, category: e.target.value })} style={{ width: '100%' }}>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Footwear">Footwear</option>
-                  <option value="Clothing">Clothing</option>
-                  <option value="Books">Books</option>
-                  <option value="Accessories">Accessories</option>
-                </select>
+
+              {/* Highlights Editor */}
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Highlights (up to 6 short bullets):</label>
+                  {newProd.highlights.length < 6 && (
+                    <button
+                      type="button"
+                      onClick={() => setNewProd({ ...newProd, highlights: [...newProd.highlights, ''] })}
+                      style={{ fontSize: '11px', color: 'var(--primary)', background: 'none', cursor: 'pointer' }}
+                    >
+                      + Add Bullet
+                    </button>
+                  )}
+                </div>
+                {newProd.highlights.map((h, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
+                    <input
+                      value={h}
+                      maxLength={120}
+                      placeholder={`Highlight bullet #${idx + 1}`}
+                      onChange={(e) => {
+                        const updated = [...newProd.highlights];
+                        updated[idx] = e.target.value;
+                        setNewProd({ ...newProd, highlights: updated });
+                      }}
+                      style={{ width: '100%', fontSize: '13px' }}
+                    />
+                    {newProd.highlights.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = newProd.highlights.filter((_, i) => i !== idx);
+                          setNewProd({ ...newProd, highlights: updated });
+                        }}
+                        style={{ background: 'none', color: 'var(--danger)', fontSize: '12px', cursor: 'pointer' }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Specifications Editor */}
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Specifications (up to 15 pairs):</label>
+                  {newProd.specifications.length < 15 && (
+                    <button
+                      type="button"
+                      onClick={() => setNewProd({ ...newProd, specifications: [...newProd.specifications, { label: '', value: '' }] })}
+                      style={{ fontSize: '11px', color: 'var(--primary)', background: 'none', cursor: 'pointer' }}
+                    >
+                      + Add Spec
+                    </button>
+                  )}
+                </div>
+                {newProd.specifications.map((s, idx) => (
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '6px', marginBottom: '6px' }}>
+                    <input
+                      value={s.label}
+                      placeholder="Key (e.g. Material)"
+                      onChange={(e) => {
+                        const updated = [...newProd.specifications];
+                        updated[idx] = { ...updated[idx], label: e.target.value };
+                        setNewProd({ ...newProd, specifications: updated });
+                      }}
+                      style={{ fontSize: '13px' }}
+                    />
+                    <input
+                      value={s.value}
+                      placeholder="Value (e.g. 100% Cotton)"
+                      onChange={(e) => {
+                        const updated = [...newProd.specifications];
+                        updated[idx] = { ...updated[idx], value: e.target.value };
+                        setNewProd({ ...newProd, specifications: updated });
+                      }}
+                      style={{ fontSize: '13px' }}
+                    />
+                    {newProd.specifications.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = newProd.specifications.filter((_, i) => i !== idx);
+                          setNewProd({ ...newProd, specifications: updated });
+                        }}
+                        style={{ background: 'none', color: 'var(--danger)', fontSize: '12px', cursor: 'pointer' }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
