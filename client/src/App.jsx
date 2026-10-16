@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import ScrollToTop from './components/ScrollToTop';
@@ -8,6 +8,7 @@ import Navbar from './components/Navbar';
 
 // Pages
 import HomePage from './pages/HomePage';
+import WelcomePage from './pages/WelcomePage';
 import Catalog from './pages/Catalog';
 import ProductDetail from './pages/ProductDetail';
 import CartPage from './pages/CartPage';
@@ -34,6 +35,7 @@ export function AppRoutes() {
         <Routes>
           {/* Public Storefront Routes */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/products" element={<Catalog />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/store/:storeId" element={<StorePage />} />
@@ -113,10 +115,77 @@ export function AppRoutes() {
         </Routes>
       </main>
 
-      <footer style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '24px 16px', marginTop: 'auto', textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)' }}>
-        <div className="container">
-          <p><strong>Venfes Multi-Vendor E-Commerce Platform with Analytics</strong></p>
-          <p style={{ marginTop: '4px' }}>MERN Stack | Atomic MongoDB Cart-Splitting Checkout | Live Aggregation Pipelines | Socket.io</p>
+      {/* Amazon & Flipkart-Style Multi-Column Footer */}
+      <footer style={{ borderTop: '1px solid var(--border)', backgroundColor: '#0f172a', color: '#cbd5e1', marginTop: 'auto' }}>
+        {/* Back to top strip */}
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          style={{
+            width: '100%',
+            backgroundColor: '#1e293b',
+            color: '#f8fafc',
+            border: 'none',
+            padding: '12px',
+            fontSize: '13px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            textAlign: 'center'
+          }}
+        >
+          Back to Top ↑
+        </button>
+
+        <div className="container" style={{ padding: '40px 16px 28px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '32px', marginBottom: '32px', fontSize: '13px' }}>
+            <div>
+              <strong style={{ color: '#ffffff', display: 'block', marginBottom: '12px', fontSize: '14px' }}>Get to Know Venfes</strong>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Link to="/welcome" style={{ color: '#94a3b8' }}>Platform Overview & Welcome</Link>
+                <Link to="/products" style={{ color: '#94a3b8' }}>All Verified Marketplace Products</Link>
+                <Link to="/coupons" style={{ color: '#94a3b8' }}>Discount Coupons & Vouchers</Link>
+                <Link to="/gift-cards" style={{ color: '#94a3b8' }}>Venfes Gift Cards & Wallet</Link>
+              </div>
+            </div>
+
+            <div>
+              <strong style={{ color: '#ffffff', display: 'block', marginBottom: '12px', fontSize: '14px' }}>Sell on Venfes</strong>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Link to="/register" style={{ color: '#94a3b8' }}>Vendor Registration & KYC</Link>
+                <Link to="/vendor" style={{ color: '#94a3b8' }}>Vendor Merchant Portal</Link>
+                <Link to="/admin" style={{ color: '#94a3b8' }}>Platform Admin Governance</Link>
+                <span style={{ color: '#64748b', fontSize: '12px' }}>10% Platform Commission Rate</span>
+              </div>
+            </div>
+
+            <div>
+              <strong style={{ color: '#ffffff', display: 'block', marginBottom: '12px', fontSize: '14px' }}>Customer Service & Tracking</strong>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Link to="/account" style={{ color: '#94a3b8' }}>Your Account Settings</Link>
+                <Link to="/orders" style={{ color: '#94a3b8' }}>Your Orders & Receipts</Link>
+                <Link to="/track" style={{ color: '#94a3b8' }}>Live GPS Vehicle Map Tracking</Link>
+                <Link to="/wishlist" style={{ color: '#94a3b8' }}>Saved Wishlist</Link>
+              </div>
+            </div>
+
+            <div>
+              <strong style={{ color: '#ffffff', display: 'block', marginBottom: '12px', fontSize: '14px' }}>Payments & Database</strong>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <span style={{ color: '#94a3b8' }}>Instant UPI (GPay, PhonePe, Paytm)</span>
+                <span style={{ color: '#94a3b8' }}>Credit / Debit Cards (Visa, RuPay)</span>
+                <span style={{ color: '#94a3b8' }}>Cash on Delivery (Doorstep COD)</span>
+                <span style={{ color: '#38bdf8', fontSize: '12px', fontWeight: 'bold' }}>MongoDB Compass Connected</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px', textAlign: 'center', fontSize: '12px', color: '#94a3b8' }}>
+            <p style={{ margin: 0, fontWeight: 'bold', color: '#f8fafc' }}>
+              Venfes — Multi-Vendor E-Commerce Platform with Analytics
+            </p>
+            <p style={{ marginTop: '4px', color: '#64748b' }}>
+              Full-Stack MERN (MongoDB Atlas / Compass, Express.js, React 18, Node.js) • Department of Information Technology • Atomic Cart-Splitting & Aggregation Analytics
+            </p>
+          </div>
         </div>
       </footer>
     </div>

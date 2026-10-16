@@ -13,7 +13,7 @@ export default function PriceComparisonRow({ products = [], loading = false }) {
   }
 
   // Pick top 6 products that have competitor price advantages
-  const dealItems = products.slice(0, 8);
+  const dealItems = Array.isArray(products) ? products.slice(0, 8) : [];
 
   if (loading || dealItems.length === 0) return null;
 

@@ -47,6 +47,20 @@ io.on('connection', (socket) => {
 
 initSocket(io);
 
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.warn(`[WARN] Port ${env.PORT} busy. Retrying in 1s...`);
+    setTimeout(() => {
+      try { server.close(); } catch {}
+      server.listen(env.PORT, () => {
+        console.log(`Server listening on port ${env.PORT} in ${env.NODE_ENV} mode`);
+      });
+    }, 1000);
+  } else {
+    console.error('Server error:', err);
+  }
+});
+
 // Start server
 async function start() {
   try {
@@ -64,5 +78,12 @@ async function start() {
 if (process.env.NODE_ENV !== 'test') {
   start();
 }
+
+function handleSignal() {
+  try { server.close(); } catch {}
+  process.exit(0);
+}
+process.on('SIGINT', handleSignal);
+process.on('SIGTERM', handleSignal);
 
 export { server, io };

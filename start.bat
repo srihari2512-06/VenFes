@@ -15,8 +15,11 @@ if not exist "node_modules" (
     echo.
 )
 
-REM Open browser after 2 seconds
-start "" cmd /c "timeout /t 2 /nobreak >nul & start http://localhost:5173"
+REM Cleanly free ports 5000, 5173, and 5174 using Node to prevent port conflicts or crashes
+call node scripts/free-ports.js
+
+REM Open browser after 3 seconds
+start "" cmd /c "timeout /t 3 /nobreak >nul & start http://localhost:5173"
 
 REM Start server and client concurrently
 echo [INFO] Starting Backend Server and Frontend Client...

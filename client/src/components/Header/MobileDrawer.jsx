@@ -83,9 +83,30 @@ export default function MobileDrawer({ isOpen, onClose }) {
 
         {/* Navigation list */}
         <div style={{ padding: '16px 0', flex: 1 }}>
+          <div style={{ padding: '0 16px 12px', borderBottom: '1px solid var(--border)' }}>
+            <Link
+              to="/welcome"
+              onClick={onClose}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                backgroundColor: 'var(--primary-light)',
+                color: 'var(--primary)',
+                borderRadius: 'var(--radius)',
+                fontSize: '13px',
+                fontWeight: '600'
+              }}
+            >
+              <ShoppingBag size={16} />
+              <span>Welcome to Venfes</span>
+            </Link>
+          </div>
+
           {/* Auth shortcut if guest */}
           {!user && (
-            <div style={{ padding: '0 16px 16px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
               <Link
                 to="/login"
                 onClick={onClose}

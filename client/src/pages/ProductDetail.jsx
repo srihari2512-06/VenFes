@@ -68,7 +68,7 @@ export default function ProductDetail({ productId, onBack }) {
 
   async function handleAdd() {
     try {
-      await addToCart(product._id, selectedVariant?._id, quantity);
+      await addToCart(product._id, selectedVariant?._id, quantity, product);
       setToast('Added to cart!');
       setTimeout(() => setToast(''), 2500);
     } catch (err) {
@@ -163,16 +163,41 @@ export default function ProductDetail({ productId, onBack }) {
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--primary)' }}>₹{currentPrice.toLocaleString()}</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#b45309' }}>
+            {product.mrp && product.mrp > currentPrice && (
+              <>
+                <span style={{ fontSize: '15px', color: 'var(--text-muted)', textDecoration: 'line-through' }}>
+                  M.R.P.: ₹{product.mrp.toLocaleString()}
+                </span>
+                <span className="badge badge-accent" style={{ fontWeight: 'bold' }}>
+                  {Math.round(((product.mrp - currentPrice) / product.mrp) * 100)}% OFF
+                </span>
+              </>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#b45309', marginLeft: 'auto' }}>
               <Star size={16} fill="#f59e0b" color="#f59e0b" />
               <span>{product.averageRating > 0 ? product.averageRating : 'New'}</span>
               <span style={{ color: 'var(--text-muted)' }}>({product.numReviews} verified reviews)</span>
             </div>
           </div>
 
-          <p style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-main)' }}>{product.description}</p>
+          <div style={{ padding: '12px', backgroundColor: 'var(--surface-alt)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+            <strong style={{ fontSize: '13px', color: 'var(--text-main)', display: 'block', marginBottom: '4px' }}>Product Overview</strong>
+            <p style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-main)', margin: 0 }}>{product.description}</p>
+          </div>
+
+          {/* Highlights / About this item */}
+          {product.highlights && product.highlights.length > 0 && (
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+              <strong style={{ fontSize: '13px', color: 'var(--text-main)', display: 'block', marginBottom: '6px' }}>About this item:</strong>
+              <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '13px', color: 'var(--text-main)', lineHeight: '1.6' }}>
+                {product.highlights.map((h, idx) => (
+                  <li key={idx} style={{ marginBottom: '4px' }}>{h}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Variants */}
           {product.variants?.length > 0 && (
@@ -234,6 +259,21 @@ export default function ProductDetail({ productId, onBack }) {
 
       {/* 60-Day Price Trend History Chart */}
       <PriceHistoryChart product={product} currentPrice={currentPrice} />
+
+      {/* Technical Specifications Table */}
+      {product.specifications && product.specifications.length > 0 && (
+        <div className="card" style={{ marginTop: '24px', padding: '24px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>Technical Details & Specifications</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '8px' }}>
+            {product.specifications.map((spec, idx) => (
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', backgroundColor: idx % 2 === 0 ? 'var(--surface-alt)' : 'transparent', borderRadius: '4px', fontSize: '13px', border: '1px solid var(--border-subtle)' }}>
+                <span style={{ color: 'var(--text-muted)', fontWeight: '500' }}>{spec.label}</span>
+                <strong style={{ color: 'var(--text-main)' }}>{spec.value}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Verified Reviews Section (FR-31) */}
       <div className="card" style={{ marginTop: '24px' }}>

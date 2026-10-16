@@ -18,7 +18,11 @@ import {
   ShieldCheck,
   Truck,
   RotateCcw,
-  CreditCard
+  CreditCard,
+  ArrowRight,
+  Clock,
+  Flame,
+  Star
 } from 'lucide-react';
 
 const CATEGORY_ICONS = {
@@ -70,6 +74,20 @@ export default function HomePage() {
     };
   });
   const [facetsLoading, setFacetsLoading] = useState(() => !getCachedData(URL_FACETS));
+
+  const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 28, seconds: 45 });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
+        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        return { hours: 4, minutes: 30, seconds: 0 };
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     loadDeals();
@@ -149,7 +167,108 @@ export default function HomePage() {
 
   return (
     <div style={{ paddingBottom: '48px' }}>
-      <div className="container" style={{ paddingTop: '16px' }}>
+      <div className="container" style={{ paddingTop: '14px' }}>
+        {/* Welcome & Marketplace Architecture Spotlight Banner */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '10px 18px',
+            backgroundColor: '#0f172a',
+            color: '#ffffff',
+            borderRadius: 'var(--radius)',
+            marginBottom: '14px',
+            fontSize: '13px',
+            flexWrap: 'wrap',
+            gap: '10px',
+            boxShadow: 'var(--shadow-sm)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={16} color="#38bdf8" />
+            <span>
+              <strong>Welcome to Venfes Marketplace:</strong> Multi-Vendor Stores, Atomic MongoDB Transactions & Live Order Tracking
+            </span>
+          </div>
+          <Link
+            to="/welcome"
+            style={{
+              color: '#38bdf8',
+              fontWeight: 'bold',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <span>Platform Overview & Guide</span>
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        {/* Flipkart-Style Circular Category Quick Bar */}
+        <div
+          style={{
+            backgroundColor: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)',
+            padding: '14px 16px',
+            marginBottom: '16px',
+            display: 'flex',
+            justifyContent: 'space-around',
+            alignItems: 'center',
+            overflowX: 'auto',
+            gap: '16px',
+            boxShadow: 'var(--shadow-xs)'
+          }}
+        >
+          {[
+            { label: 'All Products', icon: Sparkles, path: '/products', color: 'var(--primary)' },
+            { label: 'Electronics', icon: Headphones, path: '/products?category=Electronics', color: '#2563eb' },
+            { label: 'Footwear', icon: Footprints, path: '/products?category=Footwear', color: '#7c3aed' },
+            { label: 'Clothing', icon: Shirt, path: '/products?category=Clothing', color: '#ec4899' },
+            { label: 'Accessories', icon: Briefcase, path: '/products?category=Accessories', color: '#d97706' },
+            { label: 'Books', icon: BookOpen, path: '/products?category=Books', color: '#059669' },
+            { label: 'Home & Kitchen', icon: UtensilsCrossed, path: '/products?category=Home%20%26%20Kitchen', color: '#dc2626' }
+          ].map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <Link
+                key={cat.label}
+                to={cat.path}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  flexShrink: 0
+                }}
+              >
+                <div
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--surface-alt)',
+                    border: '1px solid var(--border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: cat.color,
+                    transition: 'transform 0.15s ease'
+                  }}
+                >
+                  <Icon size={22} />
+                </div>
+                <span style={{ fontSize: '12px', fontWeight: '600' }}>{cat.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+
         {/* 1. Amazon-Style Hero Carousel */}
         <HeroCarousel
           dealsProducts={deals.data}
@@ -160,10 +279,10 @@ export default function HomePage() {
         {/* 2. Signature Amazon 4-Card Feature Grid */}
         <AmazonFeatureCards products={deals.data.concat(newArrivals.data)} />
 
-        {/* 3. Product Row: Deals of the Day with High Discounts */}
+        {/* 3. Product Row: Deals of the Day with High Discounts & Live Timer */}
         <ProductRow
-          title="🔥 Deals of the Day"
-          subtitle="Highest discount percentages on verified marketplace products"
+          title="Deals of the Day"
+          subtitle={`Lightning Deals end in ${String(timeLeft.hours).padStart(2, '0')}h ${String(timeLeft.minutes).padStart(2, '0')}m ${String(timeLeft.seconds).padStart(2, '0')}s • Highest discount percentages on verified marketplace products`}
           viewAllLink="/products?sort=discount&minDiscount=15"
           products={deals.data}
           loading={deals.loading}
@@ -239,7 +358,7 @@ export default function HomePage() {
 
         {/* 6. Product Row: Top Rated Customer Favorites */}
         <ProductRow
-          title="⭐ Top Rated Products"
+          title="Top Rated Customer Favorites"
           subtitle="Highest reviewed items backed by authentic customer ratings"
           viewAllLink="/products?sort=rating&minRating=4"
           products={topRated.data}
@@ -250,7 +369,7 @@ export default function HomePage() {
 
         {/* 7. Product Row: New Arrivals */}
         <ProductRow
-          title="✨ Fresh Catalog Drops & New Arrivals"
+          title="Fresh Catalog Drops & New Arrivals"
           subtitle="Recently listed products from independent makers and artisanal creators"
           viewAllLink="/products?sort=newest"
           products={newArrivals.data}
@@ -261,7 +380,7 @@ export default function HomePage() {
 
         {/* 8. Product Row: Under ₹2,499 / Budget Finds */}
         <ProductRow
-          title="🏷️ Affordable Finds Under ₹2,499"
+          title="Affordable Finds Under ₹2,499"
           subtitle="Quality essentials that deliver high value without breaking the bank"
           viewAllLink="/products?maxPrice=2500"
           products={budgetPicks.data}

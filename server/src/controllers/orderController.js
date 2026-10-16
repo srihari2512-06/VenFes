@@ -52,7 +52,7 @@ export async function createCheckout(req, res, next) {
 
 export async function confirmPayment(req, res, next) {
   try {
-    const { orderId, paymentId, signature } = req.body;
+    const { orderId, paymentId, signature, paymentMethod } = req.body;
     const order = await Order.findById(orderId).populate('subOrderIds');
     if (!order) {
       throw new AppError('Order not found', 404, 'NOT_FOUND');
@@ -62,24 +62,43 @@ export async function confirmPayment(req, res, next) {
       return res.json({ success: true, message: 'Order already paid', data: { order } });
     }
 
-    const isValid = paymentGateway.verifySignature({
-      orderId: order.orderNumber,
-      paymentId,
-      signature
-    });
+    const effectiveMethod = paymentMethod || order.paymentMethod || 'razorpay';
+    order.paymentMethod = effectiveMethod;
 
-    if (!isValid) {
-      throw new AppError('Invalid payment signature', 400, 'PAYMENT_VERIFICATION_FAILED');
+    if (effectiveMethod === 'cod') {
+      // Cash on Delivery: marked pending or confirmed for fulfillment
+      order.paymentStatus = 'pending';
+      order.paymentDetails = {
+        transactionId: paymentId || `COD-${Date.now()}`,
+        signature: 'cash_on_delivery_confirmed'
+      };
+      await order.save();
+
+      await SubOrder.updateMany(
+        { _id: { $in: order.subOrderIds } },
+        { $set: { status: 'processing' } }
+      );
+    } else {
+      // Online payment (UPI, Credit/Debit Card, Razorpay)
+      const isValid = paymentGateway.verifySignature({
+        orderId: order.orderNumber,
+        paymentId,
+        signature
+      });
+
+      if (!isValid) {
+        throw new AppError('Invalid payment signature', 400, 'PAYMENT_VERIFICATION_FAILED');
+      }
+
+      order.paymentStatus = 'paid';
+      order.paymentDetails = { transactionId: paymentId, signature };
+      await order.save();
+
+      await SubOrder.updateMany(
+        { _id: { $in: order.subOrderIds } },
+        { $set: { status: 'processing' } }
+      );
     }
-
-    order.paymentStatus = 'paid';
-    order.paymentDetails = { transactionId: paymentId, signature };
-    await order.save();
-
-    await SubOrder.updateMany(
-      { _id: { $in: order.subOrderIds } },
-      { $set: { status: 'processing' } }
-    );
 
     // Real-time notification to admin and vendors (FR-28, S6)
     emitToAdmin('order:created', {
@@ -220,11 +239,16 @@ export async function updateSubOrderStatus(req, res, next) {
 
 export async function refundSubOrder(req, res, next) {
   let session = null;
-  try {
-    session = await mongoose.startSession();
-    session.startTransaction();
-  } catch {
-    session = null;
+  const topoType = mongoose.connection?.client?.topology?.description?.type;
+  const isReplicaOrSharded = topoType && topoType !== 'Single' && (topoType.includes('ReplicaSet') || topoType.includes('Sharded'));
+
+  if (isReplicaOrSharded) {
+    try {
+      session = await mongoose.startSession();
+      session.startTransaction();
+    } catch {
+      session = null;
+    }
   }
 
   try {

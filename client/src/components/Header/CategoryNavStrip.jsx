@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { fetchWithCache, getCachedData } from '../../utils/apiCache';
 
 export const DEFAULT_CATEGORIES = [
+  { label: 'Welcome', path: '/welcome', key: 'welcome' },
   { label: 'All Products', path: '/products', key: 'all' },
   { label: 'Electronics', path: '/products?category=Electronics', key: 'electronics' },
   { label: 'Footwear', path: '/products?category=Footwear', key: 'footwear' },
@@ -10,10 +11,10 @@ export const DEFAULT_CATEGORIES = [
   { label: 'Accessories', path: '/products?category=Accessories', key: 'accessories' },
   { label: 'Books', path: '/products?category=Books', key: 'books' },
   { label: 'Home & Kitchen', path: '/products?category=Home%20%26%20Kitchen', key: 'home & kitchen' },
-  { label: '🎟️ Coupons', path: '/coupons', key: 'coupons', highlight: true },
-  { label: '🎁 Gift Cards', path: '/gift-cards', key: 'gift-cards', highlight: true },
-  { label: '📍 Live Tracking', path: '/track', key: 'track', highlight: true },
-  { label: '🕒 Browsing History', path: '/history', key: 'history' }
+  { label: 'Coupons', path: '/coupons', key: 'coupons', highlight: true },
+  { label: 'Gift Cards', path: '/gift-cards', key: 'gift-cards', highlight: true },
+  { label: 'Live Tracking', path: '/track', key: 'track', highlight: true },
+  { label: 'Browsing History', path: '/history', key: 'history' }
 ];
 
 // Memoized single category link item to avoid unnecessary re-renders
@@ -53,8 +54,9 @@ function CategoryNavStripComponent({ isVisible = true }) {
         path: `/products?category=${encodeURIComponent(c.value)}`,
         key: c.value.toLowerCase()
       }));
+      const welcomeLink = DEFAULT_CATEGORIES.find((c) => c.key === 'welcome');
       const staticFeatureLinks = DEFAULT_CATEGORIES.filter((c) => c.highlight || c.key === 'history');
-      return [{ label: 'All Products', path: '/products', key: 'all' }, ...dynamicCats, ...staticFeatureLinks];
+      return [welcomeLink, { label: 'All Products', path: '/products', key: 'all' }, ...dynamicCats, ...staticFeatureLinks].filter(Boolean);
     }
     return DEFAULT_CATEGORIES;
   });
@@ -71,8 +73,9 @@ function CategoryNavStripComponent({ isVisible = true }) {
             path: `/products?category=${encodeURIComponent(c.value)}`,
             key: c.value.toLowerCase()
           }));
+          const welcomeLink = DEFAULT_CATEGORIES.find((c) => c.key === 'welcome');
           const staticFeatureLinks = DEFAULT_CATEGORIES.filter((c) => c.highlight || c.key === 'history');
-          setCategories([{ label: 'All Products', path: '/products', key: 'all' }, ...dynamicCats, ...staticFeatureLinks]);
+          setCategories([welcomeLink, { label: 'All Products', path: '/products', key: 'all' }, ...dynamicCats, ...staticFeatureLinks].filter(Boolean));
         }
       })
       .catch(() => {});
@@ -88,6 +91,7 @@ function CategoryNavStripComponent({ isVisible = true }) {
     const searchParams = new URLSearchParams(location.search);
     const categoryQuery = searchParams.get('category')?.toLowerCase();
 
+    if (pathname === '/welcome') return 'welcome';
     if (pathname === '/coupons') return 'coupons';
     if (pathname === '/gift-cards') return 'gift-cards';
     if (pathname === '/track') return 'track';

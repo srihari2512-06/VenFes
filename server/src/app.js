@@ -61,10 +61,17 @@ app.all('/api/*', (req, res) => {
   });
 });
 
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Serve client build if available (production / static fallback)
-const clientDistPath = path.resolve(process.cwd(), '../client/dist');
-const clientDistLocal = path.resolve(process.cwd(), 'client/dist');
-const resolvedDist = fs.existsSync(clientDistPath) ? clientDistPath : (fs.existsSync(clientDistLocal) ? clientDistLocal : null);
+const candidatePaths = [
+  path.resolve(__dirname, '../../client/dist'),
+  path.resolve(process.cwd(), 'client/dist'),
+  path.resolve(process.cwd(), '../client/dist')
+];
+const resolvedDist = candidatePaths.find(p => fs.existsSync(p)) || null;
 
 if (resolvedDist) {
   app.use(express.static(resolvedDist));

@@ -10,7 +10,12 @@ import {
   Menu,
   Store,
   Shield,
-  LogOut
+  LogOut,
+  MapPin,
+  Tag,
+  Gift,
+  Clock,
+  Compass
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -173,7 +178,7 @@ function HeaderComponent() {
                   <User size={18} color="var(--primary)" />
                   <div>
                     <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)' }}>
-                      Hello, {user.name.split(' ')[0]}
+                      Hello, {user?.name ? user.name.split(' ')[0] : (user?.email ? user.email.split('@')[0] : 'Shopper')}
                     </span>
                     <strong style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '2px' }}>
                       Account <ChevronDown size={12} />
@@ -209,12 +214,12 @@ function HeaderComponent() {
                 >
                   <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
-                      <strong>{user.name}</strong>
+                      <strong>{user?.name || user?.email || 'User'}</strong>
                       <span className="badge badge-accent" style={{ textTransform: 'uppercase', fontSize: '9px', fontWeight: 'bold' }}>
-                        {user.role}
+                        {user?.role || 'customer'}
                       </span>
                     </div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{user.email}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{user?.email || ''}</div>
                   </div>
 
                   <Link
@@ -238,7 +243,7 @@ function HeaderComponent() {
                     onClick={() => setAccountMenuOpen(false)}
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--primary)', fontWeight: '600' }}
                   >
-                    <span>📍</span> Live Order Tracking
+                    <MapPin size={15} /> Live Order Tracking
                   </Link>
 
                   <Link
@@ -246,7 +251,7 @@ function HeaderComponent() {
                     onClick={() => setAccountMenuOpen(false)}
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--text-main)' }}
                   >
-                    <span>🎟️</span> Coupons & Deals
+                    <Tag size={15} /> Coupons & Deals
                   </Link>
 
                   <Link
@@ -254,7 +259,7 @@ function HeaderComponent() {
                     onClick={() => setAccountMenuOpen(false)}
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--text-main)' }}
                   >
-                    <span>🎁</span> Gift Cards & Balance
+                    <Gift size={15} /> Gift Cards & Balance
                   </Link>
 
                   <Link
@@ -262,7 +267,7 @@ function HeaderComponent() {
                     onClick={() => setAccountMenuOpen(false)}
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', fontSize: '13px', color: 'var(--text-main)' }}
                   >
-                    <span>🕒</span> Browsing History
+                    <Clock size={15} /> Browsing History
                   </Link>
 
                   <Link

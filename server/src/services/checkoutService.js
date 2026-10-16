@@ -15,11 +15,19 @@ export async function processCheckout({ customerId, items, shippingAddress, paym
   let session = null;
   let supportsTransactions = true;
 
-  try {
-    session = await mongoose.startSession();
-    session.startTransaction();
-  } catch (err) {
-    // shortcut: standalone local mongo without replica set cannot run multi-doc transactions, upgrade to Atlas/replica set in production
+  const topoType = mongoose.connection?.client?.topology?.description?.type;
+  const isReplicaOrSharded = topoType && topoType !== 'Single' && (topoType.includes('ReplicaSet') || topoType.includes('Sharded'));
+
+  if (isReplicaOrSharded) {
+    try {
+      session = await mongoose.startSession();
+      session.startTransaction();
+    } catch (err) {
+      // shortcut: standalone local mongo without replica set cannot run multi-doc transactions, upgrade to Atlas/replica set in production
+      supportsTransactions = false;
+      session = null;
+    }
+  } else {
     supportsTransactions = false;
     session = null;
   }

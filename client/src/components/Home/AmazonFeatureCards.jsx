@@ -9,7 +9,9 @@ export default function AmazonFeatureCards({ products = [] }) {
   const [copiedCode, setCopiedCode] = useState(null);
 
   // Pick top 4 electronics products or fallbacks for Card 1
-  const techItems = products.filter(p => p.category === 'Electronics').slice(0, 4);
+  const techItems = Array.isArray(products)
+    ? products.filter(p => p && p.category === 'Electronics').slice(0, 4)
+    : [];
 
   function handleTrackSubmit(e) {
     e.preventDefault();
@@ -291,7 +293,7 @@ export default function AmazonFeatureCards({ products = [] }) {
               <input
                 value={quickOrderTrack}
                 onChange={(e) => setQuickOrderTrack(e.target.value)}
-                placeholder="Order # (e.g. ORD-20261014-2002)"
+                placeholder="Enter your Order #"
                 style={{ width: '100%', padding: '8px 10px 8px 30px', fontSize: '12px' }}
               />
             </div>

@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: venfes-marketplace
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node server/src/server.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        value: https://venfes-marketplace.onrender.com
+      - key: COMMISSION_RATE
+        value: "0.10"

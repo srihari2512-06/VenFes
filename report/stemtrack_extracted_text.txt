@@ -1,0 +1,2524 @@
+=== PAGE 1 ===
+STEMTRACK: EVENT-SOURCED BIOLOGICAL
+LINEAGE AND STEM CELL ETHICAL GOVERNANCE
+PLATFORM
+A PROJECT REPORT
+Submitted by
+TAMIL KUMARAN.M
+(310624205282)
+in partial fulfillment for the award of the degree
+of
+BACHELOR OF TECHNOLOGY
+in
+INFORMATION TECHNOLOGY
+EASWARI ENGINEERING COLLEGE, CHENNAI
+(AN AUTONOMOUS INSTITUTION) – AFFILIATED TO ANNA
+UNIVERSITY, CHENNAI
+OCTOBER 2026
+
+
+=== PAGE 2 ===
+EASWARI ENGINEERING COLLEGE
+(AN AUTONOMOUS INSTITUTION) – AFFILIATED TO ANNA
+UNIVERSITY
+RAMAPURAM, CHENNAI – 600 089
+BONAFIDE CERTIFICATE
+Certified that this project report titled “STEMTRACK: EVENT-SOURCED
+BIOLOGICAL LINEAGE AND STEM CELL ETHICAL GOVERNANCE
+PLATFORM” is the bonafide work of TAMIL KUMARAN.M (310624205282),
+who carried out the project under my supervision.
+SIGNATURE
+SIGNATURE
+Ms. SAI LAKSHMI GRANDHI
+Dr. N. ANANTHI, M.E., Ph.D.
+SUPERVISOR
+HEAD OF THE DEPARTMENT
+Assistant Professor
+Professor & Head
+Department of Information Technology
+Department of Information Technology
+Easwari Engineering College
+Easwari Engineering College
+Ramapuram, Chennai – 600 089.
+Ramapuram, Chennai – 600 089.
+iii
+
+
+=== PAGE 3 ===
+EASWARI ENGINEERING COLLEGE
+(AN AUTONOMOUS INSTITUTION) – AFFILIATED TO ANNA
+UNIVERSITY
+RAMAPURAM, CHENNAI – 600 089
+Certificate of Viva-voce Examination
+This is to certify that the Viva-Voce Examination of the Project Work entitled
+“STEMTRACK: EVENT-SOURCED BIOLOGICAL LINEAGE AND STEM
+CELL ETHICAL GOVERNANCE PLATFORM” submitted by TAMIL KU-
+MARAN.M (310624205282) in partial fulfillment of the requirements for the
+award of the degree of Bachelor of Technology in Information Technology was con-
+ducted on
+in the Department of Information Technology, Easwari
+Engineering College, Ramapuram – Chennai.
+INTERNAL EXAMINER
+EXTERNAL EXAMINER
+NAME:
+NAME:
+(in capital letters)
+(in capital letters)
+Designation:
+Designation:
+Address:
+Address:
+Date:
+Date:
+iv
+
+
+=== PAGE 4 ===
+ABSTRACT
+Human stem cell research, regenerative medicine, and somatic cell reprogramming
+(e.g., induced pluripotent stem cells, iPSCs) demand uncompromising standards of
+biological lineage provenance and institutional ethical compliance. Standard Labora-
+tory Information Management Systems (LIMS) and relational registries treat biologi-
+cal inventory as static tabular database records with in-place updates. This paradigm
+catastrophically overwrites historical cellular states, obliterates derivation audit trails
+(such as passages P0 to P1, split colonies, and freeze-thaw cycles), and fails to prop-
+agate upstream donor consent withdrawals down to derived daughter cultures.
+To resolve these critical bio-informatics and regulatory vulnerabilities, this project
+presents StemTrack: An Event-Sourced Biological Lineage and Stem Cell
+Ethical Governance Platform. Engineered upon the full-stack MERN (MongoDB,
+Express.js, React 18, Node.js) technology stack, StemTrack models biological speci-
+mens not as isolated database records, but as an event-sourced Directed Acyclic
+Graph (DAG) tracking cellular evolution:
+Donor −→Consent −→Intake Tissue Sample −→Primary Culture (P0) −→
+Passages (P1, P2...) −→CryoVials / Experiments
+The core technical architecture introduces three mathematical and regulatory in-
+variants:
+(i) DAG Cycle Guard: Powered by a Breadth-First Search (BFS) reachability
+traversal (O(V + E) complexity) that mathematically proves no cell derivation
+can introduce circular causality or self-referential parent-child loops;
+(ii) Institutional Compliance Gate: An automated verification layer that asserts
+active Institutional Review Board (IRB) ethical approval protocols and unre-
+voked donor consent before permitting derivations, while automatically tagging
+downstream derivatives upon upstream consent withdrawal;
+(iii) Atomic Multi-Document ACID Transactions: Multi-document MongoDB
+sessions that guarantee parent status updates, child node derivations, directed
+lineage edges, and immutable audit logs succeed or fail atomically.
+Furthermore, StemTrack features an interactive 10×10 cryogenic slot bio-repository
+visualizer, 3-tier Role-Based Access Control (admin, researcher, donor), real-time
+KPI dashboards, and RFC 4180 CSV export capability.
+iv
+
+
+=== PAGE 5 ===
+ACKNOWLEDGEMENT
+We express our sincere gratitude to our respected Principal Dr. P. Deiva Sundari
+and the Management of Easwari Engineering College for providing us with the
+opportunity and state-of-the-art laboratory facilities to carry out this project work
+successfully.
+We convey our heartfelt thanks to Dr.
+N. Ananthi, M.E., Ph.D., Head of
+the Department, Department of Information Technology, for her continuous encour-
+agement, administrative support, and scholastic motivation throughout our academic
+curriculum.
+We are extremely thankful and deeply indebted to our Project Supervisor, Ms.
+Sai Lakshmi Grandhi, Assistant Professor, Department of Information Technology,
+for her valuable guidance, constructive technical suggestions, and patient mentoring
+throughout the conception, development, and documentation of this project.
+We also extend our sincere appreciation to all the teaching and non-teaching fac-
+ulty members of the Department of Information Technology for their generous coop-
+eration and assistance.
+Finally, we express our profound gratitude to our parents, family members, and
+friends for their constant encouragement, moral support, and blessings throughout
+the completion of this work.
+v
+
+
+=== PAGE 6 ===
+vi
+
+
+=== PAGE 7 ===
+TABLE OF CONTENTS
+CHAPTER
+NO.
+TITLE
+PAGE No.
+ABSTRACT
+iv
+ACKNOWLEDGEMENT
+v
+CHAPTER 1
+INTRODUCTION
+1–2
+1.1 OVERVIEW
+1
+1.2 PROBLEM DEFINITION
+1
+1.3 OBJECTIVE
+1
+1.4 SCOPE OF THE PROJECT
+1
+1.5 MOTIVATION
+2
+CHAPTER 2
+RELATED WORK
+3
+2.1 LITERATURE REVIEW
+3
+2.2 EXISTING SYSTEM
+3
+2.3 PROPOSED SYSTEM
+3
+CHAPTER 3
+SYSTEM ANALYSIS
+4–5
+3.1 SYSTEM REQUIREMENTS
+4
+3.2 SOFTWARE AND HARDWARE REQUIRE-
+MENTS
+4
+CHAPTER 4
+SYSTEM DESIGN
+6–8
+4.1 SYSTEM ARCHITECTURE
+6
+4.2 MODULE DESCRIPTION
+6
+4.3 CLASS DIAGRAM
+7
+4.4 SEQUENCE DIAGRAM
+8
+CHAPTER 5
+IMPLEMENTATION
+9
+5.1 IMPLEMENTATION OVERVIEW
+9
+5.2 KEY FUNCTIONS (CODE EXPLANATION)
+9
+CHAPTER 6
+CONCLUSION & FUTURE WORK
+10
+6.1 CONCLUSION
+10
+6.2 FUTURE ENHANCEMENTS
+10
+APPENDIX
+SOURCE CODE
+11–23
+1. Project Folder Structure
+11
+2. Backend Package Installation Commands
+12
+3. Database Connection (backend/config/db.js)
+12
+4. Environment Variables (backend/.env)
+13
+5. User Model (backend/models/User.js)
+13
+6. Password Hashing and Registration
+14
+vii
+
+
+=== PAGE 8 ===
+LIST OF FIGURES
+1
+Four-Tier Enterprise System Architecture of StemTrack Platform
+. .
+10
+2
+UML Class Diagram of StemTrack Domain Entities and Relationships
+12
+3
+UML Sequence Diagram for Cellular Passage Derivation and Compli-
+ance Enforcement . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+14
+4
+Biological Lineage Directed Acyclic Graph Explorer . . . . . . . . . .
+46
+5
+Cryogenic Bio-Repository Storage Management Console . . . . . . . .
+46
+6
+Regulatory Compliance and Operations Command Center
+. . . . . .
+47
+7
+Ethical Governance and Immutable Audit Log Console . . . . . . . .
+47
+viii
+
+
+=== PAGE 9 ===
+LIST OF TABLES
+1
+Hardware Requirements
+. . . . . . . . . . . . . . . . . . . . . . . . .
+8
+2
+Software Requirements and Frameworks
+. . . . . . . . . . . . . . . .
+9
+ix
+
+
+=== PAGE 10 ===
+CHAPTER 1
+INTRODUCTION
+1.1
+OVERVIEW
+Stem cell bio-banking, regenerative therapeutics, and cellular engineering represent
+one of the most promising yet technically complex frontiers in modern clinical medicine.
+Biological specimens in stem cell laboratories do not remain static; they evolve over
+time through multiple derivation stages: primary tissue isolation, enzymatic dissoci-
+ation, feeder layer plating, sequential cellular passaging (P0 →P1 →P2), colony
+splitting, cryogenic freezing in liquid nitrogen bio-repositories (−196◦C), and con-
+trolled revival for downstream experimental differentiation assays.
+Throughout this multi-generational lifecycle, laboratories must maintain complete
+lineage traceability while complying with strict legal frameworks governing human bi-
+ological specimens, such as Institutional Review Board (IRB) ethical protocols and
+informed donor consent mandates. When a donor exercises the legal right to revoke
+or withdraw biological consent, every cell line, cryogenic vial, and downstream dif-
+ferentiation assay derived from that donor must be flagged and isolated immediately
+across the laboratory.
+StemTrack is designed to address this challenge by modeling biological materials
+as an event-sourced Directed Acyclic Graph (DAG). Developed using the MERN
+stack (MongoDB, Express, React, Node.js), StemTrack combines mathematical graph
+validation with automated compliance checks to ensure biological integrity and ethical
+governance across all research workflows.
+1.2
+PROBLEM DEFINITION
+Traditional Laboratory Information Management Systems (LIMS) and relational bio-
+logical registries exhibit fundamental architectural deficiencies when applied to stem
+cell research:
+• Destructive State Mutation: Relational registries rely on in-place SQL UPDATE
+queries (e.g., modifying a passage number from 0 to 1 directly), erasing earlier
+phenotypic states and making it impossible to audit cellular evolution over time.
+• Lack of Branching Provenance: Standard relational databases model parent-
+child relationships through foreign keys and join tables.
+These structures are
+1
+
+
+=== PAGE 11 ===
+inefficient for traversing multi-generational cellular lineage trees and lack formal
+graph invariant validation to prevent invalid cyclical edges.
+• Disconnected Ethical Governance: Donor consent status and IRB protocols
+are typically tracked in external spreadsheets or physical paper binders.
+If a
+donor withdraws consent, laboratory scientists receive no automated notifications,
+risking the illegal utilization of revoked specimens in downstream assays.
+• Physical Storage Disconnect: Cryogenic inventory systems track freezer rack
+positions but fail to correlate physical coordinates with biological passage numbers,
+morphological viability, and ethical compliance status.
+• Vulnerability to Concurrency Anomalies: When multiple researchers pas-
+sage or split cell cultures concurrently, non-transactional database updates result
+in orphan lineage nodes, duplicated passage numbers, and phantom freezer slot
+assignments.
+1.3
+OBJECTIVE
+The primary objective of this project is to architect, develop, and validate StemTrack
+as an enterprise-grade biological lineage tracking and stem cell ethical governance
+platform. Specific technical objectives include:
+1. Directed Acyclic Graph (DAG) Modeling: Formulate an event-sourced data
+model representing biological specimens, cellular passages, and split derivations as
+a directed acyclic graph.
+2. Mathematical Cycle Guard: Implement an in-memory Breadth-First Search
+(BFS) reachability algorithm that validates graph acyclicity before any derivation
+edge is persisted (O(V + E) complexity).
+3. Automated Compliance Gate: Construct middleware and controller-level se-
+curity checks that assert active donor consent and valid IRB approval prior to
+permitting biological derivations.
+4. ACID Transaction Management: Orchestrate multi-document MongoDB trans-
+actions to guarantee atomic execution of passage increments, split colony deriva-
+tions, edge creation, and audit logging.
+5. Cryogenic Bio-Repository Mapping: Provide a visual 100-slot (10×10) cryo-
+genic rack management interface with real-time occupancy indicators and slot
+collision guards.
+2
+
+
+=== PAGE 12 ===
+6. Interactive Lineage Visualization: Realize a modern, zoomable React Flow
+lineage graph rendering cellular generations, phenotypic milestones, and ethical
+compliance states.
+1.4
+SCOPE OF THE PROJECT
+The scope of StemTrack encompasses stem cell research institutes, regenerative medicine
+biobanks, university biology laboratories, and clinical trial centers.
+The platform
+manages the complete biological lifecycle from initial donor intake to experimental
+assay consumption. It provides granular 3-tier Role-Based Access Control (admin,
+researcher, donor), cryptographic password hashing, JWT bearer token security,
+RFC 4180 audit trail reporting, and real-time analytical metrics.
+1.5
+MOTIVATION
+The primary motivation behind StemTrack stems from the high regulatory risks and
+scientific irreproducibility challenges confronting modern stem cell laboratories. The
+International Society for Stem Cell Research (ISSCR) guidelines and federal regula-
+tions mandate strict provenance tracking and immediate enforcement of donor consent
+withdrawals. Inadvertently using cells from a revoked donor in published clinical tri-
+als invalidates years of research and incurs severe institutional penalties. By fusing
+event-sourced graph structures with strict compliance gates, StemTrack establishes a
+dependable, automated foundation for ethical regenerative medicine.
+3
+
+
+=== PAGE 13 ===
+CHAPTER 2
+RELATED WORK
+2.1
+LITERATURE REVIEW
+Managing biological specimens and their derivations has evolved across three primary
+generations of laboratory software:
+1. Relational Laboratory Information Management Systems (LIMS): Sys-
+tems like LabWare and OpenSpecimen rely on relational databases (SQL). While
+effective for standard hospital sample tracking and billing, their tabular schemas
+struggle to represent recursive branching, requiring complex recursive Common
+Table Expressions (CTEs) that degrade under deep generational hierarchies.
+2. Bio-Banking Inventory Registries: Commercial biobanks often prioritize phys-
+ical inventory (freezer, shelf, rack, box) using barcode scanners. However, these
+systems treat biological entities as static objects rather than evolving organisms,
+omitting cellular derivations, split colonies, and passage numbers.
+3. Event Sourcing and Directed Acyclic Graphs in Bioinformatics: Recent
+literature highlights the advantages of event sourcing and DAG structures for
+modeling genomic workflows and molecular genealogies. Rather than mutating
+state in place, event sourcing records every state change as an immutable event.
+StemTrack applies this concept directly to cell culture operations, pairing it with
+graph visualization.
+4. Ethical Governance Frameworks: Studies on bioethics emphasize the need
+for dynamic consent models where donor preferences can change over time. Auto-
+mated governance systems must enforce these changes upstream to prevent non-
+compliant research before materials are thawed or plated.
+5. Graph Traversal and Cycle Prevention in Workflow Engines: Directed
+Acyclic Graphs are standard in build systems (Make, Bazel) and computational
+biology pipelines (Nextflow, Snakemake). Applying cycle prevention algorithms
+(BFS/DFS) ensures that cellular derivations cannot generate self-referential bio-
+logical paradoxes.
+6. ACID Transactions in Modern Document Databases: MongoDB’s intro-
+duction of multi-document ACID transactions allows NoSQL systems to handle
+4
+
+
+=== PAGE 14 ===
+complex multi-entity mutations reliably, bridging the gap between flexible JSON
+schemas and transactional safety.
+7. Interactive Lineage Visualization in Modern Web UIs: Advances in web-
+based graph rendering (React Flow, D3.js) enable responsive visualization of large
+cellular lineage networks directly within browser dashboards.
+8. Cryogenic Asset Management Standards: International biobanking stan-
+dards require accurate temperature, rack coordinate, and vial-level tracking to
+prevent specimen degradation and inventory loss.
+2.2
+EXISTING SYSTEM
+Conventional stem cell laboratory infrastructure relies on a mixture of fragmented
+systems:
+• Paper laboratory notebooks and physical binder logs recording passage dates and
+split ratios.
+• Relational SQL database tables with flat foreign keys (parent_id) that lack cyclic
+invariant validation.
+• Manual email or spreadsheet notifications regarding donor consent withdrawals,
+often resulting in human communication failures.
+• Cryogenic freezer map spreadsheets that are manually updated, leading to dupli-
+cate slot allocations and misplaced specimens.
+2.2.1
+Drawbacks of the Existing System
+• Data Inconsistency: Destructive updates overwrite prior passage numbers, elim-
+inating historical traceability.
+• Regulatory Vulnerability: Lack of automated consent gating allows researchers
+to accidentally utilize revoked tissue samples.
+• High Latency in Lineage Audits: Determining the full ancestral lineage of a
+cell line requires hours of manual database queries and cross-referencing.
+• Slot Collisions: Multiple researchers claiming the same cryogenic rack position
+causes physical storage confusion and wasted laboratory reagents.
+5
+
+
+=== PAGE 15 ===
+2.3
+PROPOSED SYSTEM
+StemTrack replaces legacy registries with an event-sourced, DAG-native architecture:
+• Immutable Graph Derivations: Every passage, split, cryopreservation, and
+retrieval is modeled as an immutable node and edge within a Directed Acyclic
+Graph.
+• Automated Compliance Gate: Upstream API middleware verifies donor con-
+sent and IRB approval status before allowing any derivation or consumption.
+• Mathematical Cycle Guard: Real-time BFS reachability checks ensure biolog-
+ical DAG acyclicity, preventing circular lineages.
+• Cryogenic Grid Matrix: A responsive 10 × 10 freezer rack interface with auto-
+matic coordinate indexing and collision prevention.
+• Interactive React Flow Canvas: Visual exploration of cellular lineage trees
+with color-coded node states, passage indicators, and direct detail drawers.
+• Tamper-Proof Audit Logging: Immutable, append-only audit trail capturing
+every system event with RFC 4180 CSV export capability.
+6
+
+
+=== PAGE 16 ===
+CHAPTER 3
+SYSTEM ANALYSIS
+3.1
+SYSTEM REQUIREMENTS
+System analysis defines the operational boundaries, functional requirements, and non-
+functional quality parameters governing the StemTrack platform.
+3.1.1
+Functional Requirements
+• User Authentication & RBAC: Authenticate researchers, administrators, and
+donors using signed JSON Web Tokens (JWT) with strictly isolated route privi-
+leges.
+• Donor & Ethical Protocol Governance: Register tissue donors, record append-
+only consent changes (GIVEN, WITHDRAWN), and manage IRB approval protocols
+with expiration tracking.
+• Intake Sample Registration: Ingest raw biological tissue samples tied to active
+donors and valid IRB approvals.
+• Cellular Culture Workflows: Execute primary culture derivation (P0), serial
+cellular passaging (P0 →P1), and multi-branch splitting (≥2 child colonies).
+• Cryogenic Storage Management: Allocate and track cryovial positions within
+a 10 × 10 rack matrix; support controlled vial retrieval and thawing.
+• Experimental Utilization: Track the consumption and differentiation of bio-
+logical materials in downstream experimental assays.
+• Graph Visualization & Audit Trail: Render lineage DAGs via React Flow
+and export RFC 4180 compliant CSV audit logs for regulatory inspections.
+3.1.2
+Non-Functional Requirements
+• Graph Correctness: In-memory cycle detection must execute in O(V +E) time
+and guarantee zero circular references.
+• Low Latency: API responses for lineage subgraphs and inventory lookups must
+complete in under 120 milliseconds.
+7
+
+
+=== PAGE 17 ===
+• Data Integrity: Multi-entity updates must execute within ACID MongoDB ses-
+sions to prevent partial commits.
+• Security & Compliance: Passwords must be hashed using bcrypt (10 rounds);
+authentication endpoints must enforce rate limiting (50 req/15min).
+• Responsive UI: Interface must dynamically scale across standard laboratory
+workstations, tablets, and cleanroom displays.
+3.2
+SOFTWARE AND HARDWARE REQUIREMENTS
+To guarantee reliable execution, high-performance graph processing, and reliable data
+persistence, the operational hardware and software environments were tabulated.
+3.2.1
+Hardware Requirements
+The development and server deployment environment utilizes multi-core hardware
+to support concurrent Node.js asynchronous event loops and graph query execution
+efficiently.
+Table 1: Hardware Requirements
+Component
+Specification
+Processor
+Intel Core i5 (10th Gen or higher) / AMD Ryzen 5 equiv-
+alent (2.4 GHz minimum)
+System Memory (RAM)
+Minimum 8 GB (16 GB recommended for concurrent
+Vite HMR and MongoDB services)
+Secondary Storage
+1 GB free solid-state storage for source code, node mod-
+ules, and database assets
+Network Interface
+Standard Gigabit Ethernet / Wi-Fi connection for cloud
+database synchronization
+Display Resolution
+1366 × 768 minimum (1920 × 1080 Full HD recom-
+mended for React Flow canvas)
+3.2.2
+Software Requirements
+The software stack was chosen to guarantee non-blocking asynchronous throughput,
+responsive client-side state reactivity, and enterprise-grade data security.
+8
+
+
+=== PAGE 18 ===
+Table 2: Software Requirements and Frameworks
+Component
+Technology / Library Specification
+Operating System
+Microsoft Windows 10/11 (64-bit) / Linux Ubuntu 22.04
+LTS / macOS
+Runtime Environment
+Node.js (v18.x or v20.x LTS)
+Database Engine
+MongoDB Atlas / MongoDB Community Server (v6.0+)
+with Mongoose ODM (v8.x)
+Backend Framework
+Express.js (v4.19+) REST API
+Frontend Framework
+React 18 with Vite 5 Bundler
+Graph Visualizer
+React Flow (v11.x) with Custom Biological Node Render-
+ers
+Styling & UI Library
+Tailwind CSS (v3.4) and Lucide React Icons
+Data Visualization
+Recharts (v2.12)
+Security Packages
+Helmet, Express Rate Limit, JSON Web Tokens (JWT),
+Bcrypt.js (10 rounds)
+Testing Framework
+Jest (v29.x) and Supertest (v7.x)
+9
+
+
+=== PAGE 19 ===
+CHAPTER 4
+SYSTEM DESIGN
+4.1
+SYSTEM ARCHITECTURE
+StemTrack employs a modular, four-tier enterprise architecture consisting of the Pre-
+sentation Layer, Security Gateway Layer, Biological Governance & Workflow Layer,
+and MongoDB Persistence Layer, as illustrated in Figure 1.
+Figure 1: Four-Tier Enterprise System Architecture of StemTrack Platform
+The four synchronized operational layers include:
+1. Presentation Tier (Client-Side): Built with React 18 and Vite. Implements
+single-page application (SPA) routing, interactive dashboard KPI cards, React
+Flow lineage DAG visualizer, material workflow modals (Sample, Passage, Split,
+Cryopreserve, Retrieve), cryogenic rack matrix, and RFC 4180 audit trail exporter.
+10
+
+
+=== PAGE 20 ===
+2. Security Gateway Tier: Manages incoming HTTP/REST requests. Enforces
+Helmet security headers, IP rate limiting (50 req/15min on auth routes), JWT
+Bearer token authentication, and Role-Based Access Control (RBAC) separating
+Admin, Researcher, and Donor permissions.
+3. Biological Governance & Workflow Tier: Contains the core domain guardrails:
+the DAG Cycle Guard (BFS reachability engine), Compliance Gate (append-only
+consent and active IRB verification), and Mongoose Multi-Document Transaction
+Manager.
+4. Data Persistence Tier (MongoDB Atlas): Houses isolated collections (Users,
+EthicalApprovals, Donors, BiologicalMaterials, LineageEdges, Experiments,
+AuditLogs) optimized with compound indexes and transactional ACID sessions.
+4.2
+MODULE DESCRIPTION
+4.2.1
+Authentication and RBAC Module
+Controls user authentication using 24-hour JSON Web Tokens. Manages three access
+roles: admin (IRB approvals, audit logs, system configuration), researcher (donor
+intake, culture passaging, splitting, cryopreservation, assays), and donor (viewing
+personal tissue records and consent history).
+4.2.2
+Ethical Approval and Consent Management Module
+Tracks IRB approval protocols with protocol IDs, approval dates, expiration dates,
+and operational statuses (APPROVED, EXPIRED, REVOKED). Maintains an append-only
+ledger of donor consent events, tracking consent status (GIVEN, WITHDRAWN), legal
+guardian signatures, and timestamps.
+4.2.3
+Biological Material Lifecycle Module
+Manages biological entities through standardized lifecycle states (ACTIVE, CRYOPRESERVED,
+UTILIZED, DISCARDED). Automates passage number incrementation (P0 →P1), via-
+bility scoring, morphological categorization, and cell count tracking.
+4.2.4
+Lineage Graph and Cycle Prevention Module
+Constructs directed edges connecting parent and child biological specimens. Main-
+tains relationship types (DERIVED, PASSAGED, SPLIT, THAWED). Invokes the BFS Cycle
+Guard before edge creation to prevent circular references.
+11
+
+
+=== PAGE 21 ===
+4.2.5
+Cryogenic Storage Module
+Models liquid nitrogen storage freezers, racks, and boxes as a 10×10 coordinate matrix
+(A1 to J10). Manages slot occupancy, prevents slot collision through database unique
+indexes, and tracks cryogenic retrieval workflows.
+4.2.6
+Audit Trail and Reporting Module
+Records every state change, derivation, consent modification, and storage update in
+an immutable, append-only AuditLogs collection. Formats audit logs into RFC 4180
+compliant CSV files for regulatory submissions.
+4.3
+CLASS DIAGRAM
+The static structure and domain entities of StemTrack are delineated in the UML
+Class Diagram shown in Figure 2.
+Figure 2: UML Class Diagram of StemTrack Domain Entities and Relationships
+The diagram formalizes the operational relationships between the platform’s core
+entities:
+12
+
+
+=== PAGE 22 ===
+• User Class: Encapsulates identity credentials, hashed passwords, roles (admin,
+researcher, donor), and authentication tokens.
+• EthicalApproval Class: Models IRB protocols, protocol numbers, approval and
+expiry dates, and operational states.
+• Donor Class: Captures donor identifiers, demographic data, linked user accounts,
+and an embedded array of append-only consent records.
+• BiologicalMaterial Class: Central domain entity representing cell lines, passage
+numbers, cell types, viability scores, storage locations, and operational statuses.
+• LineageEdge Class: Models directed graph edges with source material, target
+material, derivation type, and creation timestamps.
+• AuditLog Class: Append-only log recording action types, acting users, affected
+entities, IP addresses, and previous/new state payloads.
+4.4
+SEQUENCE DIAGRAM
+The dynamic interaction sequence between actors, security middleware, domain guardrails,
+and the MongoDB persistence layer during a cellular passage derivation is illustrated
+in Figure 3.
+The chronological execution sequence proceeds as follows:
+1. Passage Request: The researcher submits a passage derivation request specify-
+ing parent material ID and new culture parameters.
+2. Security Interception: Express middleware validates the Bearer JWT token
+and confirms the researcher role.
+3. Consent Gate Check: The Compliance Gate queries the parent donor’s consent
+history and IRB protocol status. If consent is WITHDRAWN or IRB is expired, the
+request is immediately rejected (403 Forbidden).
+4. BFS Cycle Guard Check: The graph engine runs BFS reachability from the
+proposed child to the parent. If a path already exists, a cycle error is thrown
+(400 Bad Request).
+5. ACID Session Start: A MongoDB multi-document transaction session is initi-
+ated.
+6. Material Creation: The new passage culture (P + 1) is instantiated with status
+ACTIVE.
+13
+
+
+=== PAGE 23 ===
+Figure 3: UML Sequence Diagram for Cellular Passage Derivation and Compliance
+Enforcement
+14
+
+
+=== PAGE 24 ===
+7. Edge Creation: A directed LineageEdge is inserted connecting parent to child.
+8. Parent Status Update: Parent culture status is transitioned to PASSAGED.
+9. Audit Logging: An immutable record is written to AuditLogs.
+10. Transaction Commit: The session commits atomically, returning the created
+culture to the client.
+15
+
+
+=== PAGE 25 ===
+CHAPTER 5
+IMPLEMENTATION
+5.1
+IMPLEMENTATION OVERVIEW
+StemTrack is structured as a full-stack JavaScript application separating client and
+server concerns into frontend/ and backend/ directories:
+• Backend (Node.js & Express 5): Connects to MongoDB Atlas via Mongoose 9.
+Exposes modular controllers executing atomic operations inside MongoDB trans-
+action sessions. Incorporates rate limiting on authentication routes and Helmet
+security headers.
+• Frontend (React 18 & Vite 5): Features an interactive graph visualizer built
+with React Flow (@xyflow/react) and styled with Tailwind CSS. Employs Dagre
+to calculate hierarchical graph layouts dynamically in either Left-to-Right (LR)
+or Top-to-Bottom (TB) orientations.
+5.2
+KEY FUNCTIONS (CODE EXPLANATION)
+5.2.1
+DAG Cycle Prevention Engine (Breadth-First Search)
+To ensure biological validity, cellular lineage must form a strict Directed Acyclic
+Graph. The function assertDagInvariant evaluates proposed connections (A →B)
+using Breadth-First Search traversal to verify that the parent is not reachable from
+the child:
+ValidEdge(u, v) ⇐⇒u /∈Reach(v, G)
+(5.1)
+1 // backend/utils/dagGuard.js
+2 async
+function
+isReachable(startId , targetId , session = null) {
+3
+const
+startStr = startId.toString ();
+4
+const
+targetStr = targetId.toString ();
+5
+if (startStr
+===
+targetStr) return
+true;
+6
+7
+const
+visited = new Set([ startStr ]);
+8
+const
+queue = [startId ];
+9
+const
+MAX_HOPS = 100;
+10
+let hops = 0;
+11
+12
+while (queue.length > 0 && hops < MAX_HOPS) {
+16
+
+
+=== PAGE 26 ===
+13
+hops ++;
+14
+const
+current = queue.shift ();
+15
+let query = LineageEdge.find ({ sourceMaterialId : current });
+16
+if (session) query = query.session(session);
+17
+const
+edges = await
+query.lean ();
+18
+19
+for (const
+edge of edges) {
+20
+const
+nextStr = edge. targetMaterialId ?. toString ();
+21
+if (! nextStr) continue;
+22
+if (nextStr
+===
+targetStr) return
+true;
+23
+if (! visited.has(nextStr)) {
+24
+visited.add(nextStr);
+25
+queue.push(edge. targetMaterialId );
+26
+}
+27
+}
+28
+}
+29
+return
+false;
+30 }
+31
+32 async
+function
+assertDagInvariant (sourceId , targetId , session = null)
+{
+33
+if (sourceId.toString () ===
+targetId.toString ()) {
+34
+return { valid: false , message: ’Self -referential
+edges (A -> A)
+are
+strictly
+prohibited.’ };
+35
+}
+36
+const
+cycleDetected = await
+isReachable(targetId , sourceId , session
+);
+37
+if ( cycleDetected) {
+38
+return { valid: false , message: ’Cycle
+detected: Lineage
+must
+remain an acyclic
+DAG.’ };
+39
+}
+40
+return { valid: true };
+41 }
+Listing 5.1: BFS Directed Acyclic Graph Cycle Guard Implementation
+5.2.2
+Institutional Compliance Gatekeeper
+The compliance gate verifies that donor consent remains active and that the associated
+IRB approval is valid before permitting cellular derivations:
+1 // backend/utils/complianceGate .js
+2 async
+function
+validateComplianceForDerivation (donorId , approvalId ,
+session = null) {
+3
+let
+donorQuery = Donor.findById(donorId);
+4
+if (session) donorQuery = donorQuery.session(session);
+5
+const
+donor = await
+donorQuery;
+17
+
+
+=== PAGE 27 ===
+6
+if (! donor) return { allowed: false , status: 404, message: ’Donor
+not found.’ };
+7
+8
+const
+latestConsent = donor.consentHistory ?. length > 0
+9
+? donor.consentHistory [donor.consentHistory .length - 1]
+10
+: null;
+11
+const
+isGiven = latestConsent ? latestConsent.status === ’GIVEN ’ :
+donor.consent ?. status === ’Valid ’;
+12
+if (! isGiven) {
+13
+return { allowed: false , status: 409, message: ’Compliance
+violation: Donor
+consent
+WITHDRAWN.’ };
+14
+}
+15
+16
+let
+approvalQuery = EthicalApproval .findById(approvalId);
+17
+if (session) approvalQuery = approvalQuery.session(session);
+18
+const
+approval = await
+approvalQuery;
+19
+if (! approval) return { allowed: false , status: 404, message: ’IRB
+approval
+not found.’ };
+20
+21
+if (approval.status !== ’APPROVED ’) {
+22
+return { allowed: false , status: 409, message: ’IRB
+Protocol is
+not
+APPROVED.’ };
+23
+}
+24
+if (new Date(approval.validUntil) < new Date ()) {
+25
+return { allowed: false , status: 409, message: ’Ethical
+approval
+protocol
+has
+EXPIRED.’ };
+26
+}
+27
+return { allowed: true , donor , approval };
+28 }
+Listing 5.2: Compliance Gate Middleware Logic
+5.2.3
+Atomic Derivation Workflows (Multi-Document Transactions)
+Culture passaging is executed within a MongoDB ACID transaction. If cycle valida-
+tion fails or an error occurs during edge insertion, all database operations roll back
+cleanly:
+1 // backend/controllers/ materialController .js
+2 const
+passageCulture = async (req , res) => {
+3
+const { id } = req.params;
+4
+const { label , notes , storageLocation } = req.body;
+5
+const
+parent = await
+findMaterial(id);
+6
+if (! parent) return res.status (404).json ({ message: ’Parent
+material
+not found.’ });
+7
+8
+// 1. Verify
+Institutional
+Compliance
+18
+
+
+=== PAGE 28 ===
+9
+const
+compliance = await
+validateComplianceForDerivation (parent.
+donorId , parent.approvalId);
+10
+if (! compliance.allowed) {
+11
+return res.status(compliance.status || 409).json ({ message:
+compliance.message });
+12
+}
+13
+14
+const
+nextPassage = (parent.passageNumber || parent.currentPassage
+|| 0) + 1;
+15
+const
+childMaterialId = label ?. trim () || ’CLT -P’ + nextPassage +
+’-’ + Date.now().toString ().slice (-4);
+16
+17
+// 2. Execute
+Atomic Multi -Document
+Transaction
+18
+const
+session = await
+mongoose.startSession ();
+19
+try {
+20
+session. startTransaction ();
+21
+const [child] = await
+BiologicalMaterial .create ([{
+22
+materialId: childMaterialId ,
+23
+materialType: ’Culture ’,
+24
+passageNumber: nextPassage ,
+25
+currentPassage : nextPassage ,
+26
+storageLocation : storageLocation || ’Incubator 2 - Shelf B’,
+27
+status: ’ACTIVE ’,
+28
+donorId: parent.donorId ,
+29
+approvalId: parent.approvalId ,
+30
+createdBy: req.user._id
+31
+}], { session });
+32
+33
+// 3. Mathematical
+Cycle
+Verification
+34
+const
+dagCheck = await
+assertDagInvariant (parent._id , child._id ,
+session);
+35
+if (! dagCheck.valid) {
+36
+const err = new Error(dagCheck.message);
+37
+err.statusCode = 409;
+38
+throw err;
+39
+}
+40
+41
+// 4. Create
+Directed
+Lineage
+Edge & Audit
+Entry
+42
+const [edge] = await
+LineageEdge.create ([{
+43
+sourceMaterialId : parent._id ,
+44
+targetMaterialId : child._id ,
+45
+eventType: ’PASSAGED ’,
+46
+notes: notes || ’Passaged to P’ + nextPassage
+47
+}], { session });
+48
+49
+await
+AuditLog.create ([{
+50
+userId: req.user._id ,
+19
+
+
+=== PAGE 29 ===
+51
+role: req.user.role ,
+52
+action: ’MATERIAL_PASSAGED ’,
+53
+entityType: ’BiologicalMaterial ’,
+54
+entityId: child._id ,
+55
+details: { parentId: parent.materialId , childId: child.
+materialId , passageNumber: nextPassage }
+56
+}], { session });
+57
+58
+await
+session. commitTransaction ();
+59
+return res.status (201).json ({ message: ’Passage
+created.’,
+material: child , edge });
+60
+} catch (err) {
+61
+await
+session. abortTransaction ();
+62
+throw err;
+63
+} finally {
+64
+session.endSession ();
+65
+}
+66 };
+Listing 5.3: Atomic Multi-Document Passage Derivation Controller
+5.2.4
+Hierarchical Graph Layout Generation (Dagre Integration)
+The frontend calculates 2D node coordinates and edge attachment points using Dagre
+to generate clean hierarchical lineage representations:
+1 // frontend/src/utils/layoutGraph.js
+2 export
+function
+getLayoutedElements (nodes , edges , direction = ’LR ’) {
+3
+if (! nodes || nodes.length === 0) return { nodes: [], edges: [] };
+4
+5
+const
+dagreGraph = new dagre.graphlib.Graph ();
+6
+dagreGraph. setDefaultEdgeLabel (() => ({}));
+7
+dagreGraph.setGraph ({
+8
+rankdir: direction , // ’LR ’ for Left -to -Right , ’TB ’ for Top -to -
+Bottom
+9
+nodesep: 50,
+10
+ranksep: 90
+11
+});
+12
+13
+nodes.forEach (( node) => {
+14
+dagreGraph.setNode(node.id , { width: 250, height: 130 });
+15
+});
+16
+17
+edges.forEach (( edge) => {
+18
+dagreGraph.setEdge(edge.source , edge.target);
+19
+});
+20
+20
+
+
+=== PAGE 30 ===
+21
+dagre.layout(dagreGraph);
+22
+23
+const
+layoutedNodes = nodes.map(( node) => {
+24
+const pos = dagreGraph.node(node.id);
+25
+return {
+26
+...node ,
+27
+targetPosition : direction
+=== ’LR ’ ? ’left ’ : ’top ’,
+28
+sourcePosition : direction
+=== ’LR ’ ? ’right ’ : ’bottom ’,
+29
+position: { x: pos.x - 125, y: pos.y - 65 }
+30
+};
+31
+});
+32
+33
+return { nodes: layoutedNodes , edges };
+34 }
+Listing 5.4: Hierarchical Lineage Graph Auto-Layout Function
+21
+
+
+=== PAGE 31 ===
+CHAPTER 6
+CONCLUSION & FUTURE WORK
+6.1
+CONCLUSION
+The StemTrack platform delivers a comprehensive biological lineage tracking and
+ethical governance solution tailored specifically to human stem cell research. By re-
+placing static database updates with an event-sourced Directed Acyclic Graph (DAG),
+the platform resolves key limitations of traditional Laboratory Information Manage-
+ment Systems (LIMS).
+Key achievements of this project include:
+• Biological Provenance: Derivations, splits, passages, and cryopreservations are
+modeled as immutable directed edges, establishing complete cellular genealogies.
+• Mathematical Integrity: The Breadth-First Search DAG cycle prevention en-
+gine guarantees that biological lineages remain strictly acyclic, rejecting circular
+dependencies.
+• Integrated Ethical Governance: Linking derivations directly to active IRB
+protocols and append-only donor consent records ensures that consent revocations
+propagate automatically across downstream experiments.
+• ACID Reliability: MongoDB multi-document transactions guarantee that parent-
+child state changes, edges, and audit records update atomically.
+• Intuitive Visualization: An interactive React Flow canvas paired with a 10×10
+cryogenic slot matrix provides researchers with clear insight into both cellular
+lineages and physical freezer capacity.
+6.2
+FUTURE ENHANCEMENTS
+Future development could expand StemTrack across several dimensions:
+1. Genomic Characterization Integration: Link biological lineage nodes directly
+to Next-Generation Sequencing (NGS) data, single-cell RNA-seq files, and kary-
+otype quality reports.
+22
+
+
+=== PAGE 32 ===
+2. Physical Barcode & RFID Scanner Support: Integrate 2D DataMatrix bar-
+code scanning for robotic cryogenic storage systems (e.g., Brooks Life Sciences,
+Hamilton BioOS).
+3. Blockchain-Backed Consent Verification: Record donor consent milestones
+on a private distributed ledger (e.g., Hyperledger Fabric) to provide tamper-proof
+provenance for regulatory review.
+4. Automated Cell Growth Kinetics: Integrate computer vision models to evalu-
+ate microscope images, automatically calculating cell confluence and recommend-
+ing passaging schedules.
+23
+
+
+=== PAGE 33 ===
+APPENDIX: SOURCE CODE
+1. Project Folder Structure
+1 stemcellproject /
+2 |-- backend/
+3 |
+|-- controllers/
+4 |
+|
+|-- approvalController .js
+5 |
+|
+|-- auditController .js
+6 |
+|
+|-- dashboardController .js
+7 |
+|
+|-- donorController .js
+8 |
+|
+|-- experimentController .js
+9 |
+|
+|-- exportController .js
+10 |
+|
+|-- lineageController .js
+11 |
+|
+|-- materialController .js
+12 |
+|
+‘-- storageController .js
+13 |
+|-- middleware/
+14 |
+|
+|-- auth.js
+15 |
+|
+‘-- validateObjectId .js
+16 |
+|-- models/
+17 |
+|
+|-- AuditLog.js
+18 |
+|
+|-- BiologicalMaterial .js
+19 |
+|
+|-- Donor.js
+20 |
+|
+|-- EthicalApproval .js
+21 |
+|
+|-- Experiment.js
+22 |
+|
+|-- LineageEdge.js
+23 |
+|
+‘-- User.js
+24 |
+|-- routes/
+25 |
+|-- utils/
+26 |
+|
+|-- complianceGate .js
+27 |
+|
+‘-- dagGuard.js
+28 |
+|-- .env.example
+29 |
+|-- package.json
+30 |
+|-- seed.js
+31 |
+‘-- server.js
+32 ‘-- frontend/
+33
+|-- src/
+34
+|
+|-- components/
+35
+|
+|-- context/
+36
+|
+|-- pages/
+37
+|
+‘-- utils/
+38
+‘-- package.json
+Listing 6.1: StemTrack Repository Directory Structure
+24
+
+
+=== PAGE 34 ===
+2. Backend Package Installation Commands
+1 # Root
+dependencies & cross -package
+orchestrator
+2 npm
+install
+3
+4 # Backend
+dependencies
+installation
+5 cd backend
+6 npm
+install
+express
+mongoose
+dotenv
+cors
+helmet
+express -rate -limit
+express -validator
+bcryptjs
+jsonwebtoken
+7 npm
+install
+--save -dev jest
+supertest
+8
+9 # Frontend
+dependencies
+installation
+10 cd ../ frontend
+11 npm
+install
+react react -dom react -router -dom
+@xyflow/react
+dagre
+lucide -react
+tailwindcss
+@tailwindcss/vite
+Listing 6.2: Package Installation Commands
+25
+
+
+=== PAGE 35 ===
+3. Database Connection (backend/config/db.js)
+1 // backend/server.js
+2 const
+mongoose = require(’mongoose ’);
+3 const
+mongoURI = process.env.MONGODB_URI;
+4
+5 if (! mongoURI) {
+6
+console.error(’FAIL: MONGODB_URI
+environment
+variable is not
+defined .’);
+7
+process.exit (1);
+8 }
+9
+10 mongoose.connect(mongoURI)
+11
+.then (() => {
+12
+console.log(’SUCCESS: MongoDB
+Atlas
+Connected
+Successfully ’);
+13
+})
+14
+.catch ((err) => {
+15
+console.error(’FAIL
+MongoDB
+Connection:’, err.message || err);
+16
+process.exit (1);
+17
+});
+Listing 6.3: Database Connection Script
+26
+
+
+=== PAGE 36 ===
+4. Environment Variables (backend/.env)
+1 # backend /.env.example
+2 PORT =5000
+3 MONGODB_URI=mongodb+srv :// admin_user: SecurePass2026@cluster0 .mongodb.
+net/stemtrack_db?retryWrites=true&w=majority
+4 CLIENT_URL=http :// localhost :5173
+5 JWT_SECRET= stemtrack_super_secure_jwt_secret_key_2026
+Listing 6.4: Environment Variables Configuration
+27
+
+
+=== PAGE 37 ===
+5. User Model (backend/models/User.js)
+1 // backend/models/User.js
+2 const
+mongoose = require(’mongoose ’);
+3
+4 const
+userSchema = new
+mongoose.Schema(
+5
+{
+6
+name: { type: String , required: true , trim: true , minlength: 2 },
+7
+email: { type: String , required: true , unique: true , lowercase:
+true , trim: true },
+8
+passwordHash: { type: String , required: true , select: false },
+9
+role: { type: String , enum: [’admin ’, ’researcher ’, ’donor ’],
+default: ’researcher ’ }
+10
+},
+11
+{ timestamps: true }
+12 );
+13
+14 userSchema.methods.toJSON = function () {
+15
+const obj = this.toObject ();
+16
+delete obj.passwordHash;
+17
+return obj;
+18 };
+19
+20 module.exports = mongoose.model(’User ’, userSchema);
+Listing 6.5: User Mongoose Schema
+28
+
+
+=== PAGE 38 ===
+6. Password Hashing and Registration
+1 // backend/routes/authRoutes.js (Registration
+Handler)
+2 router.post(’/register ’, async (req , res) => {
+3
+const { name , email , password , role } = req.body;
+4
+if (! name || !email || !password) {
+5
+return res.status (400).json ({ message: ’Name , email and
+password
+are
+required.’ });
+6
+}
+7
+if (password.length < 6) {
+8
+return res.status (400).json ({ message: ’Password
+must be at least
+6 characters.’ });
+9
+}
+10
+11
+const
+safeRole = [’researcher ’, ’donor ’]. includes(role) ? role : ’
+researcher ’;
+12
+try {
+13
+const
+existing = await
+User.findOne ({ email: email.toLowerCase ().
+trim () });
+14
+if (existing) {
+15
+return res.status (409).json ({ message: ’An account
+with this
+email
+already
+exists.’ });
+16
+}
+17
+18
+const
+passwordHash = await
+bcrypt.hash(password , 12);
+19
+const
+user = await
+User.create ({ name , email , passwordHash , role:
+safeRole });
+20
+const
+token = signToken(user);
+21
+22
+res.status (201).json ({ message: ’Account
+created
+successfully.’,
+token , user });
+23
+} catch (err) {
+24
+res.status (500).json ({ message: ’Internal
+server
+error
+during
+registration.’ });
+25
+}
+26 });
+Listing 6.6: Password Hashing and User Registration Handler
+29
+
+
+=== PAGE 39 ===
+7. Login and JWT Generation
+1 // backend/routes/authRoutes.js (Login
+Handler)
+2 function
+signToken(user) {
+3
+return jwt.sign(
+4
+{ sub: user._id , email: user.email , role: user.role },
+5
+process.env.JWT_SECRET ,
+6
+{ expiresIn: ’1h’ }
+7
+);
+8 }
+9
+10 router.post(’/login ’, async (req , res) => {
+11
+const { email , password } = req.body;
+12
+if (! email || !password) {
+13
+return res.status (400).json ({ message: ’Email and
+password
+are
+required.’ });
+14
+}
+15
+16
+try {
+17
+const
+user = await
+User.findOne ({ email: email.toLowerCase ().trim
+() }).select (’+ passwordHash ’);
+18
+if (! user) return res.status (401).json ({ message: ’Invalid
+email
+or password.’ });
+19
+20
+const
+isMatch = await
+bcrypt.compare(password , user.passwordHash)
+;
+21
+if (! isMatch) return res.status (401).json ({ message: ’Invalid
+email or password.’ });
+22
+23
+const
+token = signToken(user);
+24
+res.status (200).json ({ message: ’Login
+successful.’, token , user:
+user.toJSON () });
+25
+} catch (err) {
+26
+res.status (500).json ({ message: ’Internal
+server
+error
+during
+login.’ });
+27
+}
+28 });
+Listing 6.7: User Login and JWT Generation
+30
+
+
+=== PAGE 40 ===
+8. Authentication Middleware
+1 // backend/middleware/auth.js
+2 const jwt = require(’jsonwebtoken ’);
+3 const
+User = require (’../ models/User ’);
+4
+5 async
+function
+requireAuth(req , res , next) {
+6
+const
+authHeader = req.headers.authorization;
+7
+if (! authHeader || !authHeader.startsWith(’Bearer
+’)) {
+8
+return res.status (401).json ({ message: ’Authentication
+required.
+Please
+provide a Bearer
+token.’ });
+9
+}
+10
+const
+token = authHeader.split(’ ’)[1];
+11
+12
+try {
+13
+const
+decoded = jwt.verify(token , process.env.JWT_SECRET);
+14
+const
+user = await
+User.findById(decoded.sub);
+15
+if (! user) return res.status (401).json ({ message: ’User
+account
+no longer
+exists.’ });
+16
+req.user = user;
+17
+next ();
+18
+} catch (err) {
+19
+return res.status (401).json ({ message: err.name === ’
+TokenExpiredError ’ ? ’Token
+expired.’ : ’Invalid
+token.’ });
+20
+}
+21 }
+22
+23 function
+requireRole (... roles) {
+24
+return (req , res , next) => {
+25
+if (!req.user) return res.status (401).json ({ message: ’Not
+authenticated.’ });
+26
+if (! roles.includes(req.user.role)) {
+27
+return res.status (403).json ({ message: ’Access
+denied. Required
+: ’ + roles.join(’ or
+’) });
+28
+}
+29
+next ();
+30
+};
+31 }
+Listing 6.8: Authentication and Role Verification Middleware
+31
+
+
+=== PAGE 41 ===
+9. Create API (Sample Registration)
+1 // backend/controllers/ materialController .js
+2 const
+registerSample = async (req , res) => {
+3
+const { donorId , approvalId , label , storageLocation } = req.body;
+4
+if (! donorId || !approvalId || !label) {
+5
+return res.status (400).json ({ message: ’donorId , approvalId , and
+label are
+required.’ });
+6
+}
+7
+8
+// Pre -validate
+compliance
+9
+const
+compliance = await
+validateComplianceForDerivation (donorId ,
+approvalId);
+10
+if (! compliance.allowed) {
+11
+return res.status(compliance.status || 409).json ({ message:
+compliance.message });
+12
+}
+13
+14
+const
+existing = await
+BiologicalMaterial .findOne ({ materialId:
+label.trim () });
+15
+if (existing) return res.status (409).json ({ message: ’Material ID
+already
+exists.’ });
+16
+17
+const
+session = await
+mongoose.startSession ();
+18
+try {
+19
+session. startTransaction ();
+20
+const [sample] = await
+BiologicalMaterial .create ([{
+21
+materialId: label.trim (),
+22
+materialType: ’Sample ’,
+23
+passageNumber: 0,
+24
+currentPassage : 0,
+25
+storageLocation : storageLocation || ’Primary
+Cold Room R-01’,
+26
+status: ’ACTIVE ’,
+27
+donorId: compliance.donor._id ,
+28
+approvalId: compliance.approval._id ,
+29
+createdBy: req.user._id
+30
+}], { session });
+31
+32
+await
+AuditLog.create ([{
+33
+userId: req.user._id ,
+34
+role: req.user.role ,
+35
+action: ’SAMPLE_REGISTERED ’,
+36
+entityType: ’BiologicalMaterial ’,
+37
+entityId: sample._id ,
+38
+details: { materialId: sample.materialId , donorId: compliance.
+donor.donorId }
+39
+}], { session });
+32
+
+
+=== PAGE 42 ===
+40
+41
+await
+session. commitTransaction ();
+42
+return res.status (201).json ({ message: ’Intake
+sample
+registered
+successfully.’, material: sample });
+43
+} catch (err) {
+44
+await
+session. abortTransaction ();
+45
+throw err;
+46
+} finally {
+47
+session.endSession ();
+48
+}
+49 };
+Listing 6.9: Intake Sample Registration Endpoint Controller
+33
+
+
+=== PAGE 43 ===
+10. Read API (Lineage Graph BFS Traversal)
+1 // backend/controllers/ lineageController .js
+2 const
+getLineageByMaterialId = async (req , res) => {
+3
+const
+rawId = req.params.id;
+4
+const
+isObjectId = /^[0 -9a-fA -F]{24}$/. test(rawId);
+5
+const
+starting = await
+BiologicalMaterial .findOne(
+6
+isObjectId ? { $or: [{ _id: rawId }, { materialId: rawId }] } : {
+materialId: rawId }
+7
+).populate(’donorId ’);
+8
+9
+if (! starting) return res.status (404).json ({ message: ’Biological
+material
+not found ’ });
+10
+11
+// Bidirectional
+BFS
+traversal
+12
+const
+visitedNodeIds = new Set([ starting._id.toString ()]);
+13
+const
+edgesMap = new Map();
+14
+let
+frontier = [starting._id];
+15
+let depth = 0;
+16
+17
+while (frontier.length > 0 && depth < 50) {
+18
+depth ++;
+19
+const
+connectedEdges = await
+LineageEdge.find ({
+20
+$or: [{ sourceMaterialId : { $in: frontier } }, {
+targetMaterialId : { $in: frontier } }]
+21
+}).lean ();
+22
+23
+const
+nextFrontier = [];
+24
+for (const
+edge of connectedEdges ) {
+25
+edgesMap.set(edge._id.toString (), edge);
+26
+const sId = edge. sourceMaterialId .toString ();
+27
+const tId = edge. targetMaterialId .toString ();
+28
+if (! visitedNodeIds .has(sId)) { visitedNodeIds .add(sId);
+nextFrontier.push(edge. sourceMaterialId ); }
+29
+if (! visitedNodeIds .has(tId)) { visitedNodeIds .add(tId);
+nextFrontier.push(edge. targetMaterialId ); }
+30
+}
+31
+frontier = nextFrontier;
+32
+}
+33
+34
+const
+materials = await
+BiologicalMaterial .find ({ _id: { $in: Array
+.from( visitedNodeIds) } })
+35
+.populate(’donorId ’).populate(’approvalId ’).lean ();
+36
+37
+const
+nodes = materials.map((mat) => ({
+38
+id: mat._id.toString (),
+39
+type: mat.materialType ,
+34
+
+
+=== PAGE 44 ===
+40
+position: { x: 0, y: 0 },
+41
+data: {
+42
+label: mat.materialId ,
+43
+materialId: mat.materialId ,
+44
+materialType: mat.materialType ,
+45
+currentPassage : mat.passageNumber ?? mat.currentPassage ,
+46
+status: mat.status
+47
+}
+48
+}));
+49
+50
+const
+edges = Array.from(edgesMap.values ()).map(( edge) => ({
+51
+id: edge._id.toString (),
+52
+source: edge. sourceMaterialId .toString (),
+53
+target: edge. targetMaterialId .toString (),
+54
+label: edge.eventType
+55
+}));
+56
+57
+return res.status (200).json ({ nodes , edges });
+58 };
+Listing 6.10: Lineage Graph Bidirectional BFS Traversal Controller
+35
+
+
+=== PAGE 45 ===
+11. Update API (Cryopreservation Slot Check)
+1 // backend/controllers/ materialController .js
+2 const
+cryopreserveMaterial = async (req , res) => {
+3
+const { id } = req.params;
+4
+const { freezer , box , position } = req.body;
+5
+if (! freezer || !box || !position) {
+6
+return res.status (400).json ({ message: ’Freezer , box , and
+position
+are
+required.’ });
+7
+}
+8
+9
+const
+material = await
+findMaterial(id);
+10
+if (! material) return res.status (404).json ({ message: ’Material
+not
+found.’ });
+11
+12
+// Verify
+storage
+position
+vacancy
+13
+const
+occupied = await
+BiologicalMaterial .findOne ({
+14
+_id: { $ne: material._id },
+15
+status: ’STORED ’,
+16
+’storageLocation .freezer ’: freezer.trim (),
+17
+’storageLocation .box ’: box.trim (),
+18
+’storageLocation .position ’: position.trim ().toUpperCase ()
+19
+});
+20
+21
+if (occupied) {
+22
+return res.status (409).json ({ message: ’Slot ’ + freezer + ’>’ +
+box + ’>’ + position + ’ occupied by ’ + occupied.materialId });
+23
+}
+24
+25
+material.status = ’STORED ’;
+26
+material.materialType = ’CryoVial ’;
+27
+material. storageLocation = { freezer: freezer.trim (), box: box.trim
+(), position: position.trim ().toUpperCase () };
+28
+await
+material.save ();
+29
+30
+return res.status (200).json ({ message: ’Material
+stored in cryo
+repository.’, material });
+31 };
+Listing 6.11: Cryopreservation Slot Vacancy Check and Allocation Controller
+36
+
+
+=== PAGE 46 ===
+12. Delete API (Discard Contaminated Material)
+1 // backend/controllers/ materialController .js
+2 const
+discardMaterial = async (req , res) => {
+3
+const { id } = req.params;
+4
+const { reason } = req.body;
+5
+if (! reason || !reason.trim ()) {
+6
+return res.status (400).json ({ message: ’Reason is required
+for
+biological
+discard.’ });
+7
+}
+8
+9
+const
+material = await
+findMaterial(id);
+10
+if (! material) return res.status (404).json ({ message: ’Material
+not
+found.’ });
+11
+if (material.status === ’DISCARDED ’) {
+12
+return res.status (409).json ({ message: ’Material
+has
+already
+been
+discarded.’ });
+13
+}
+14
+15
+material.status = ’DISCARDED ’;
+16
+await
+material.save ();
+17
+18
+await
+AuditLog.create ({
+19
+userId: req.user._id ,
+20
+role: req.user.role ,
+21
+action: ’MATERIAL_DISCARDED ’,
+22
+entityType: ’BiologicalMaterial ’,
+23
+entityId: material._id ,
+24
+details: { materialId: material.materialId , reason: reason.trim ()
+}
+25
+});
+26
+27
+return res.status (200).json ({ message: ’Material
+securely
+discarded
+.’, material });
+28 };
+Listing 6.12: Biological Material Discard and Audit Trail Entry
+37
+
+
+=== PAGE 47 ===
+13. Express Routes
+1 // backend/routes/materialRoutes .js
+2 const
+express = require(’express ’);
+3 const
+router = express.Router ();
+4 const {
+5
+registerSample , deriveCulture , passageCulture , splitCulture ,
+6
+cryopreserveMaterial , retrieveMaterial , useMaterialInExperiment ,
+7
+discardMaterial , listMaterials , getMaterialById
+8 } = require (’../ controllers/materialController ’);
+9 const { requireRole } = require (’../ middleware/auth ’);
+10 const { validateObjectId } = require (’../ middleware/validateObjectId
+’);
+11
+12 router.get(’/’, listMaterials);
+13 router.get(’/:id ’, validateObjectId (’id ’), getMaterialById );
+14 router.post(’/sample ’, requireRole(’researcher ’, ’admin ’),
+registerSample );
+15 router.post (’/:id/culture ’, requireRole(’researcher ’, ’admin ’),
+validateObjectId (’id ’), deriveCulture);
+16 router.post (’/:id/passage ’, requireRole(’researcher ’, ’admin ’),
+validateObjectId (’id ’), passageCulture );
+17 router.post (’/:id/split ’, requireRole(’researcher ’, ’admin ’),
+validateObjectId (’id ’), splitCulture);
+18 router.post (’/:id/cryopreserve ’, requireRole(’researcher ’, ’admin ’),
+validateObjectId (’id ’), cryopreserveMaterial );
+19 router.post (’/:id/retrieve ’, requireRole(’researcher ’, ’admin ’),
+validateObjectId (’id ’), retrieveMaterial );
+20 router.post (’/:id/use ’, requireRole(’researcher ’, ’admin ’),
+validateObjectId (’id ’), useMaterialInExperiment );
+21 router.post (’/:id/discard ’, requireRole(’researcher ’, ’admin ’),
+validateObjectId (’id ’), discardMaterial );
+22
+23 module.exports = router;
+Listing 6.13: Biological Material Express Routes Configuration
+38
+
+
+=== PAGE 48 ===
+14. Main Server File
+1 // backend/server.js
+2 require(’dotenv ’).config ();
+3 const
+express = require(’express ’);
+4 const
+mongoose = require(’mongoose ’);
+5 const
+cors = require(’cors ’);
+6 const
+helmet = require(’helmet ’);
+7 const
+rateLimit = require(’express -rate -limit ’);
+8 const { requireAuth } = require (’./ middleware/auth ’);
+9
+10 const app = express ();
+11 app.use(helmet ({ contentSecurityPolicy : false }));
+12 app.use(cors ({ origin: true , credentials: true }));
+13 app.use(express.json ());
+14
+15 // Routes
+16 app.use(’/api/auth/login ’, rateLimit ({ windowMs: 15 * 60 * 1000, max:
+50 }));
+17 app.use(’/api/auth ’, require (’./ routes/authRoutes ’));
+18 app.use(’/api/lineage ’, requireAuth , require (’./ routes/lineageRoutes
+’));
+19 app.use(’/api/materials ’, requireAuth , require (’./ routes/
+materialRoutes ’));
+20 app.use(’/api/donors ’, requireAuth , require (’./ routes/donorRoutes ’));
+21 app.use(’/api/approvals ’, requireAuth , require (’./ routes/
+approvalRoutes ’));
+22 app.use(’/api/experiments ’, requireAuth , require (’./ routes/
+experimentRoutes ’));
+23 app.use(’/api/storage ’, requireAuth , require (’./ routes/storageRoutes
+’));
+24 app.use(’/api/dashboard ’, requireAuth , require (’./ routes/
+dashboardRoutes ’));
+25 app.use(’/api/audit ’, requireAuth , require (’./ routes/auditRoutes ’));
+26 app.use(’/api/export ’, requireAuth , require (’./ routes/exportRoutes ’))
+;
+27
+28 const
+PORT = process.env.PORT || 5000;
+29 app.listen(PORT , () => console.log(’StemTrack
+API Server
+running on
+port ’ + PORT));
+30 module.exports = app;
+Listing 6.14: Express Application Entry Point and Security Configuration
+39
+
+
+=== PAGE 49 ===
+15. React Login Component
+1 // frontend/src/pages/LoginPage.jsx
+2 import React , { useState } from ’react ’;
+3 import { useNavigate } from ’react -router -dom ’;
+4 import { useAuth } from
+’../ context/AuthContext ’;
+5
+6 export
+default
+function
+LoginPage () {
+7
+const { login } = useAuth ();
+8
+const
+navigate = useNavigate ();
+9
+const [email , setEmail] = useState (’’);
+10
+const [password , setPassword] = useState (’’);
+11
+const [error , setError] = useState (’’);
+12
+13
+const
+handleSubmit = async (e) => {
+14
+e. preventDefault ();
+15
+try {
+16
+await
+login(email.trim (), password);
+17
+navigate (’/’);
+18
+} catch (err) {
+19
+setError(err.message || ’Authentication
+failed ’);
+20
+}
+21
+};
+22
+23
+return (
+24
+<div
+className ="min -h-screen bg -[#090 d16] flex items -center
+justify -center p-4">
+25
+<form
+onSubmit ={ handleSubmit} className ="bg -[#0 d1322] border
+border -slate -800 p-8 rounded -2xl w-full max -w-md shadow -2xl">
+26
+<h1 className ="text -xl font -bold text -white mb -2"> StemTrack
+Login </h1 >
+27
+{error && <div
+className ="p-3 bg -red -950/60
+border border -red
+-800 text -red -300 text -xs rounded mb -4">{ error}</div >}
+28
+<input
+type =" email" placeholder =" Email" value ={ email}
+onChange ={e=>setEmail(e.target.value)} required
+29
+className ="w-full bg -slate -900
+border border -slate -700
+p-2 text -white
+rounded mb -3 text -sm" />
+30
+<input
+type =" password" placeholder =" Password" value ={ password
+} onChange ={e=>setPassword(e.target.value)} required
+31
+className ="w-full bg -slate -900
+border border -slate -700
+p-2 text -white
+rounded mb -4 text -sm" />
+32
+<button
+type =" submit" className ="w-full py -2.5 bg -sky -600
+hover:bg -sky -500 text -white font -bold
+rounded">
+33
+Sign In
+34
+</button >
+35
+</form >
+36
+</div >
+40
+
+
+=== PAGE 50 ===
+37
+);
+38 }
+Listing 6.15: React User Authentication Login Interface
+41
+
+
+=== PAGE 51 ===
+16. Admin Dashboard Logic
+1 // backend/controllers/ dashboardController .js
+2 const
+getDashboardMetrics = async (req , res) => {
+3
+const now = new Date ();
+4
+const
+in30Days = new Date(now.getTime () + 30 * 24 * 60 * 60 * 1000)
+;
+5
+6
+const [donorCount , activeCount , storedCount , expCount , donors ,
+expiring , recent] = await
+Promise.all([
+7
+Donor.countDocuments ({}) ,
+8
+BiologicalMaterial .countDocuments ({ status: { $in: [’ACTIVE ’, ’
+Active ’] } }),
+9
+BiologicalMaterial .countDocuments ({ status: { $in: [’STORED ’, ’
+Cryopreserved ’] } }),
+10
+Experiment.countDocuments ({}) ,
+11
+Donor.find ({}).select(’consentHistory
+consent ’).lean (),
+12
+EthicalApproval .find ({ status: ’APPROVED ’, validUntil: { $gte:
+now , $lte: in30Days } }).lean (),
+13
+AuditLog.find ({}).populate(’userId ’, ’name role ’).sort ({
+timestamp: -1 }).limit (10).lean ()
+14
+]);
+15
+16
+let given = 0, withdrawn = 0;
+17
+for (const d of donors) {
+18
+const
+latest = d.consentHistory ?.[d.consentHistory .length - 1];
+19
+if (( latest ?. status || d.consent ?. status) === ’GIVEN ’ || (latest
+?. status || d.consent ?. status) === ’Valid ’) given ++;
+20
+else
+withdrawn ++;
+21
+}
+22
+23
+return res.status (200).json ({
+24
+totals: { donors: donorCount , activeMaterials : activeCount ,
+storedVials: storedCount , experiments: expCount },
+25
+consent: { given , withdrawn , total: donorCount },
+26
+expiringApprovals : expiring ,
+27
+recentActivity : recent
+28
+});
+29 };
+Listing 6.16: Dashboard KPI Metrics and Regulatory Aggregation Controller
+42
+
+
+=== PAGE 52 ===
+17. REST API Request and Response Examples
+Authentication Endpoint
+Request: POST /api/auth/login
+1 {
+2
+"email ": " researcher@stemtrack .io",
+3
+"password ": " ResearchPass123 !"
+4 }
+Listing 6.17: POST /api/auth/login Request Payload
+Response: HTTP 200 OK
+1 {
+2
+"message ": "Login
+successful .",
+3
+"token ": " eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 ...",
+4
+"user ": {
+5
+"_id": "67 af8a1012fbc98765432101 ",
+6
+"name ": "Dr. Maya Lin (Researcher)",
+7
+"email ": " researcher@stemtrack .io",
+8
+"role ": "researcher"
+9
+}
+10 }
+Listing 6.18: POST /api/auth/login Response Payload
+Culture Derivation Endpoint
+Request: POST /api/materials/67af8a1012fbc98765432104/passage
+1 {
+2
+"label ": "CLT -P2 -BRANCH -A",
+3
+"notes ": "Passaged
+onto
+geltrex
+feeder
+matrix",
+4
+" storageLocation ": "Incubator 3 - Shelf A"
+5 }
+Listing 6.19: POST /api/materials/:id/passage Request Payload
+Response: HTTP 201 Created
+1 {
+2
+"message ": "Passage P2 created
+successfully .",
+3
+"material ": {
+4
+"_id": "67 af8b2212fbc98765432199 ",
+5
+"materialId ": "CLT -P2 -BRANCH -A",
+6
+"materialType ": "Culture",
+7
+" passageNumber ": 2,
+8
+" currentPassage ": 2,
+43
+
+
+=== PAGE 53 ===
+9
+"status ": "ACTIVE",
+10
+" storageLocation ": "Incubator 3 - Shelf A"
+11
+},
+12
+"edge ": {
+13
+"_id": "67 af8b2212fbc98765432200 ",
+14
+" sourceMaterialId ": "67 af8a1012fbc98765432104 ",
+15
+" targetMaterialId ": "67 af8b2212fbc98765432199 ",
+16
+"eventType ": "PASSAGED"
+17
+}
+18 }
+Listing 6.20: POST /api/materials/:id/passage Response Payload
+Compliance Gate Rejection Example
+Request: Derivation from sample associated with donor DNR-SEED-002 (Withdrawn
+consent)
+Response: HTTP 409 Conflict
+1 {
+2
+"message ": "Compliance
+violation: Donor
+consent is currently
+WITHDRAWN or inactive. Derivation
+blocked ."
+3 }
+Listing 6.21: Compliance Gate Rejection Response Payload
+44
+
+
+=== PAGE 54 ===
+99
+Takahashi, K., and Yamanaka, S. (2006). “Induction of pluripotent stem cells from
+mouse embryonic and adult fibroblast cultures by defined factors,” Cell, vol. 126, no.
+4, pp. 663–676.
+Isasi, R., and Knoppers, B. M. (2015).
+“Oversight of human stem cell research:
+Guidance for researchers and review committees,” Stem Cell Reports, vol. 4, no. 4,
+pp. 519–524.
+Fowler, M. (2017). Event Sourcing Patterns and Architectural Principles in Modern
+Software Engineering, Addison-Wesley Professional, Boston.
+Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. (2022). Introduction to
+Algorithms, 4th ed., MIT Press, Cambridge, pp. 589–612.
+National Institutes of Health (NIH). (2016). NIH Guidelines for Human Stem Cell
+Research, U.S. Department of Health and Human Services, Bethesda.
+World Medical Association.
+(2013).
+“World Medical Association Declaration of
+Helsinki: Ethical principles for medical research involving human subjects,” JAMA,
+vol. 310, no. 20, pp. 2191–2194.
+Bader, G. D., and Hogue, C. W. (2003). “An automated method for finding molecular
+complexes in large protein interaction graphs,” BMC Bioinformatics, vol. 4, no. 1,
+art. no. 2.
+Banker, K., Bakkum, P., Verch, S., and Garrett, D. (2016). MongoDB in Action:
+Covers MongoDB version 3.0+, Manning Publications, Shelter Island.
+Banks, A., and Porcello, E. (2020). Learning React: Modern Patterns for Developing
+React Applications, 2nd ed., O’Reilly Media, Sebastopol.
+Shafranovich, Y. (2005). Common Format and MIME Type for Comma-Separated
+Values (CSV) Files, RFC 4180, Internet Engineering Task Force (IETF).
+45
+
+
+=== PAGE 55 ===
+SCREENSHOTS
+Figure 4: Biological Lineage Directed Acyclic Graph Explorer
+Figure 5: Cryogenic Bio-Repository Storage Management Console
+46
+
+
+=== PAGE 56 ===
+Figure 6: Regulatory Compliance and Operations Command Center
+Figure 7: Ethical Governance and Immutable Audit Log Console
+47
+
+

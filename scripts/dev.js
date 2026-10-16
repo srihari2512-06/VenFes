@@ -1,5 +1,6 @@
 import { spawn, execSync } from 'child_process';
 import process from 'process';
+import { freePorts } from './free-ports.js';
 
 console.log('\x1b[36m====================================================\x1b[0m');
 console.log('\x1b[36m   Starting Venfes Marketplace (Server + Client)    \x1b[0m');
@@ -7,6 +8,9 @@ console.log('\x1b[36m====================================================\x1b[0m
 console.log('• Backend API:  http://localhost:5000');
 console.log('• Frontend SPA: http://localhost:5173');
 console.log('Press Ctrl+C to stop both services.\n');
+
+// Clean up any stale processes occupying our ports before starting
+freePorts();
 
 const isWin = process.platform === 'win32';
 const npmCmd = isWin ? 'npm.cmd' : 'npm';
@@ -30,6 +34,7 @@ function cleanup() {
     if (client.pid) {
       try { execSync(`taskkill /pid ${client.pid} /T /F`, { stdio: 'ignore' }); } catch {}
     }
+    freePorts();
   } else {
     try { server.kill('SIGINT'); } catch {}
     try { client.kill('SIGINT'); } catch {}
