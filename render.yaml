@@ -3,10 +3,12 @@ services:
     name: venfes-marketplace
     env: node
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: node server/src/server.js
     autoDeploy: true
     envVars:
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
       - key: NODE_ENV
         value: production
       - key: PORT

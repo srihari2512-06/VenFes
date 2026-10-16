@@ -7,7 +7,7 @@ export async function connectDB(uri = env.MONGODB_URI) {
     return conn;
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
-    if (env.NODE_ENV === 'production') process.exit(1);
+    console.warn(`[WARN] Server will continue running, but MongoDB connection is required for data operations (${uri}).`);
     throw err;
   }
 }

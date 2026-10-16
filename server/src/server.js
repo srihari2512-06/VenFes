@@ -52,7 +52,7 @@ server.on('error', (err) => {
     console.warn(`[WARN] Port ${env.PORT} busy. Retrying in 1s...`);
     setTimeout(() => {
       try { server.close(); } catch {}
-      server.listen(env.PORT, () => {
+      server.listen(env.PORT, '0.0.0.0', () => {
         console.log(`Server listening on port ${env.PORT} in ${env.NODE_ENV} mode`);
       });
     }, 1000);
@@ -69,7 +69,7 @@ async function start() {
   } catch (err) {
     console.warn(`[WARN] MongoDB connection failed (${err.message}). Server started, but database operations will require MongoDB running at ${env.MONGODB_URI}.`);
   }
-  server.listen(env.PORT, () => {
+  server.listen(env.PORT, '0.0.0.0', () => {
     console.log(`Server listening on port ${env.PORT} in ${env.NODE_ENV} mode`);
   });
 }
