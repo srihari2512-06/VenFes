@@ -68,9 +68,21 @@ function generateCompetitorPrices(price, category) {
   ];
 }
 
-export async function seedDatabase() {
-  await mongoose.connect(env.MONGODB_URI);
-  console.log('Connected to MongoDB for database seeding...');
+export async function seedDatabase(targetUri = env.MONGODB_URI) {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await mongoose.connect(targetUri, { serverSelectionTimeoutMS: 5000 });
+    } catch (err) {
+      const localUri = 'mongodb://127.0.0.1:27017/venfes';
+      if (targetUri !== localUri) {
+        console.warn(`[WARN] Seeding primary URI failed (${err.message}). Falling back to local MongoDB...`);
+        await mongoose.connect(localUri, { serverSelectionTimeoutMS: 3000 });
+      } else {
+        throw err;
+      }
+    }
+  }
+  console.log(`Connected to MongoDB (${mongoose.connection.host || 'database'}) for database seeding...`);
 
   // Clear existing collections
   await Promise.all([

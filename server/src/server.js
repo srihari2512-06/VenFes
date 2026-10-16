@@ -66,6 +66,21 @@ async function start() {
   try {
     await connectDB();
     console.log('Connected to MongoDB successfully');
+
+    // Auto-seed initial catalog if database is empty so products are immediately available
+    try {
+      const { Product } = await import('./models/Product.js');
+      const count = await Product.countDocuments();
+      if (count === 0) {
+        console.log('[INFO] No products found in database. Automatically seeding demo catalog...');
+        const { seedDatabase } = await import('./seed.js');
+        await seedDatabase();
+      } else {
+        console.log(`[INFO] Catalog ready with ${count} products.`);
+      }
+    } catch (seedErr) {
+      console.warn('[WARN] Auto-seed check failed:', seedErr.message);
+    }
   } catch (err) {
     console.warn(`[WARN] MongoDB connection failed (${err.message}). Server started, but database operations will require MongoDB running at ${env.MONGODB_URI}.`);
   }

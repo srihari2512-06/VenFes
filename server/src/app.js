@@ -16,8 +16,20 @@ import uploadRoutes from './routes/uploadRoutes.js';
 
 export const app = express();
 
-// Security headers (NFR-04)
-app.use(helmet());
+// Security headers with allowed image sources for catalog media (NFR-04)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      imgSrc: ["'self'", "data:", "blob:", "https://images.unsplash.com", "https://res.cloudinary.com", "https://*"],
+      connectSrc: ["'self'", "ws:", "wss:", "http://localhost:*", "https://*"],
+      fontSrc: ["'self'", "https:", "data:"]
+    }
+  },
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // CORS configuration (NFR-04)
 app.use(cors({

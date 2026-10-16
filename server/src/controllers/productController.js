@@ -9,8 +9,26 @@ function escapeRegex(text) {
   return String(text).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
+let isSeeding = false;
+async function ensureCatalogSeeded() {
+  if (isSeeding) return;
+  try {
+    const count = await Product.countDocuments();
+    if (count === 0) {
+      isSeeding = true;
+      const { seedDatabase } = await import('../seed.js');
+      await seedDatabase();
+    }
+  } catch (err) {
+    console.warn('[WARN] Runtime catalog auto-seed check skipped:', err.message);
+  } finally {
+    isSeeding = false;
+  }
+}
+
 export async function getProducts(req, res, next) {
   try {
+    await ensureCatalogSeeded();
     const {
       q,
       search,
