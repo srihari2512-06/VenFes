@@ -1132,9 +1132,340 @@ export async function seedDatabase(targetUri = env.MONGODB_URI) {
   const createdProducts = await Product.create(enrichedProducts);
   console.log(`Successfully created ${createdProducts.length} catalog products!`);
 
-  // Customer starts clean with 0 orders. Real orders are created only when products are bought.
-  console.log('Seeding complete! Customer order history is completely clean.');
+  // 5. Seed Realistic Orders, SubOrders, PayoutLedgers & Reviews (FR-15, FR-16, FR-25, FR-26, FR-31)
+  console.log('Seeding realistic multi-vendor orders, suborders, and customer reviews...');
 
+  const pApex = createdProducts[0];
+  const pKeyboard = createdProducts[1];
+  const pLoafers = createdProducts.find(p => p.category === 'Footwear') || createdProducts[8];
+  const pTee = createdProducts.find(p => p.category === 'Clothing') || createdProducts[12];
+  const pCoffee = createdProducts.find(p => p.category === 'Home & Kitchen') || createdProducts[16];
+  const pWallet = createdProducts.find(p => p.category === 'Accessories') || createdProducts[20];
+
+  const addr1 = { street: '42 MG Road, Indiranagar', city: 'Bengaluru', state: 'Karnataka', zip: '560038', country: 'India' };
+  const addr2 = { street: '18 Anna Salai, T. Nagar', city: 'Chennai', state: 'Tamil Nadu', zip: '600017', country: 'India' };
+
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+
+  // Order 1: Multi-vendor completed order (Apex Headphones + Urban Loafers)
+  const order1Total = pApex.price + pLoafers.price;
+  const order1 = await Order.create({
+    orderNumber: 'ORD-2026-1001',
+    customerId: customer1._id,
+    subOrderIds: [],
+    totalAmount: order1Total,
+    paymentStatus: 'paid',
+    paymentMethod: 'razorpay',
+    paymentDetails: { transactionId: 'pay_mock_1001', orderId: 'order_mock_1001', signature: 'sig_mock_1001' },
+    shippingAddress: addr1,
+    createdAt: new Date(now - 12 * day)
+  });
+
+  const subOrder1A = await SubOrder.create({
+    subOrderNumber: 'SUB-2026-1001-A',
+    parentOrderId: order1._id,
+    vendorId: pApex.vendorId,
+    customerId: customer1._id,
+    items: [{
+      productId: pApex._id,
+      productName: pApex.name,
+      variantSku: pApex.variants?.[0]?.sku || '',
+      variantInfo: pApex.variants?.[0]?.color || '',
+      price: pApex.price,
+      quantity: 1,
+      subtotal: pApex.price
+    }],
+    subtotal: pApex.price,
+    commissionRate: 0.10,
+    commissionAmount: Math.round(pApex.price * 0.10),
+    vendorPayoutAmount: Math.round(pApex.price * 0.90),
+    status: 'delivered',
+    statusHistory: [
+      { status: 'placed', changedAt: new Date(now - 12 * day) },
+      { status: 'processing', changedAt: new Date(now - 11 * day) },
+      { status: 'shipped', changedAt: new Date(now - 9 * day) },
+      { status: 'delivered', changedAt: new Date(now - 7 * day) }
+    ],
+    createdAt: new Date(now - 12 * day)
+  });
+
+  const subOrder1B = await SubOrder.create({
+    subOrderNumber: 'SUB-2026-1001-B',
+    parentOrderId: order1._id,
+    vendorId: pLoafers.vendorId,
+    customerId: customer1._id,
+    items: [{
+      productId: pLoafers._id,
+      productName: pLoafers.name,
+      variantSku: pLoafers.variants?.[0]?.sku || '',
+      variantInfo: pLoafers.variants?.[0]?.color || '',
+      price: pLoafers.price,
+      quantity: 1,
+      subtotal: pLoafers.price
+    }],
+    subtotal: pLoafers.price,
+    commissionRate: 0.10,
+    commissionAmount: Math.round(pLoafers.price * 0.10),
+    vendorPayoutAmount: Math.round(pLoafers.price * 0.90),
+    status: 'delivered',
+    statusHistory: [
+      { status: 'placed', changedAt: new Date(now - 12 * day) },
+      { status: 'processing', changedAt: new Date(now - 10 * day) },
+      { status: 'shipped', changedAt: new Date(now - 8 * day) },
+      { status: 'delivered', changedAt: new Date(now - 6 * day) }
+    ],
+    createdAt: new Date(now - 12 * day)
+  });
+
+  order1.subOrderIds = [subOrder1A._id, subOrder1B._id];
+  await order1.save();
+
+  // Payout ledgers for Order 1 (settled)
+  await PayoutLedger.create([
+    {
+      vendorId: pApex.vendorId,
+      subOrderId: subOrder1A._id,
+      amount: subOrder1A.vendorPayoutAmount,
+      commission: subOrder1A.commissionAmount,
+      status: 'settled',
+      settledAt: new Date(now - 5 * day),
+      settledBy: admin._id
+    },
+    {
+      vendorId: pLoafers.vendorId,
+      subOrderId: subOrder1B._id,
+      amount: subOrder1B.vendorPayoutAmount,
+      commission: subOrder1B.commissionAmount,
+      status: 'settled',
+      settledAt: new Date(now - 5 * day),
+      settledBy: admin._id
+    }
+  ]);
+
+  // Reviews for Order 1 products
+  await Review.create([
+    {
+      productId: pApex._id,
+      customerId: customer1._id,
+      subOrderId: subOrder1A._id,
+      rating: 5,
+      comment: 'Exceptional sound staging and active noise cancellation. The battery life easily surpasses 35 hours on long commutes. Highly recommended!',
+      isFlagged: false,
+      createdAt: new Date(now - 6 * day)
+    },
+    {
+      productId: pLoafers._id,
+      customerId: customer1._id,
+      subOrderId: subOrder1B._id,
+      rating: 5,
+      comment: 'Super comfortable for everyday wear. The bamboo knit lining keeps feet cool even during warm humid days.',
+      isFlagged: false,
+      createdAt: new Date(now - 5 * day)
+    }
+  ]);
+
+  // Order 2: In-transit order (Custom 75% Mechanical Keyboard)
+  const order2 = await Order.create({
+    orderNumber: 'ORD-2026-1002',
+    customerId: customer1._id,
+    subOrderIds: [],
+    totalAmount: pKeyboard.price,
+    paymentStatus: 'paid',
+    paymentMethod: 'razorpay',
+    paymentDetails: { transactionId: 'pay_mock_1002', orderId: 'order_mock_1002' },
+    shippingAddress: addr1,
+    createdAt: new Date(now - 3 * day)
+  });
+
+  const subOrder2A = await SubOrder.create({
+    subOrderNumber: 'SUB-2026-1002-A',
+    parentOrderId: order2._id,
+    vendorId: pKeyboard.vendorId,
+    customerId: customer1._id,
+    items: [{
+      productId: pKeyboard._id,
+      productName: pKeyboard.name,
+      variantSku: pKeyboard.variants?.[0]?.sku || '',
+      price: pKeyboard.price,
+      quantity: 1,
+      subtotal: pKeyboard.price
+    }],
+    subtotal: pKeyboard.price,
+    commissionRate: 0.10,
+    commissionAmount: Math.round(pKeyboard.price * 0.10),
+    vendorPayoutAmount: Math.round(pKeyboard.price * 0.90),
+    status: 'shipped',
+    statusHistory: [
+      { status: 'placed', changedAt: new Date(now - 3 * day) },
+      { status: 'processing', changedAt: new Date(now - 2 * day) },
+      { status: 'shipped', changedAt: new Date(now - 1 * day) }
+    ],
+    createdAt: new Date(now - 3 * day)
+  });
+
+  order2.subOrderIds = [subOrder2A._id];
+  await order2.save();
+
+  await PayoutLedger.create({
+    vendorId: pKeyboard.vendorId,
+    subOrderId: subOrder2A._id,
+    amount: subOrder2A.vendorPayoutAmount,
+    commission: subOrder2A.commissionAmount,
+    status: 'accrued'
+  });
+
+  // Order 3: Multi-vendor completed order for customer2 (Ananya Deshmukh)
+  const order3Total = pTee.price + pWallet.price;
+  const order3 = await Order.create({
+    orderNumber: 'ORD-2026-1003',
+    customerId: customer2._id,
+    subOrderIds: [],
+    totalAmount: order3Total,
+    paymentStatus: 'paid',
+    paymentMethod: 'razorpay',
+    paymentDetails: { transactionId: 'pay_mock_1003', orderId: 'order_mock_1003' },
+    shippingAddress: addr2,
+    createdAt: new Date(now - 8 * day)
+  });
+
+  const subOrder3A = await SubOrder.create({
+    subOrderNumber: 'SUB-2026-1003-A',
+    parentOrderId: order3._id,
+    vendorId: pTee.vendorId,
+    customerId: customer2._id,
+    items: [{
+      productId: pTee._id,
+      productName: pTee.name,
+      variantSku: pTee.variants?.[0]?.sku || '',
+      price: pTee.price,
+      quantity: 1,
+      subtotal: pTee.price
+    }],
+    subtotal: pTee.price,
+    commissionRate: 0.10,
+    commissionAmount: Math.round(pTee.price * 0.10),
+    vendorPayoutAmount: Math.round(pTee.price * 0.90),
+    status: 'delivered',
+    statusHistory: [
+      { status: 'placed', changedAt: new Date(now - 8 * day) },
+      { status: 'processing', changedAt: new Date(now - 7 * day) },
+      { status: 'shipped', changedAt: new Date(now - 5 * day) },
+      { status: 'delivered', changedAt: new Date(now - 3 * day) }
+    ],
+    createdAt: new Date(now - 8 * day)
+  });
+
+  const subOrder3B = await SubOrder.create({
+    subOrderNumber: 'SUB-2026-1003-B',
+    parentOrderId: order3._id,
+    vendorId: pWallet.vendorId,
+    customerId: customer2._id,
+    items: [{
+      productId: pWallet._id,
+      productName: pWallet.name,
+      variantSku: pWallet.variants?.[0]?.sku || '',
+      price: pWallet.price,
+      quantity: 1,
+      subtotal: pWallet.price
+    }],
+    subtotal: pWallet.price,
+    commissionRate: 0.10,
+    commissionAmount: Math.round(pWallet.price * 0.10),
+    vendorPayoutAmount: Math.round(pWallet.price * 0.90),
+    status: 'delivered',
+    statusHistory: [
+      { status: 'placed', changedAt: new Date(now - 8 * day) },
+      { status: 'processing', changedAt: new Date(now - 6 * day) },
+      { status: 'shipped', changedAt: new Date(now - 4 * day) },
+      { status: 'delivered', changedAt: new Date(now - 2 * day) }
+    ],
+    createdAt: new Date(now - 8 * day)
+  });
+
+  order3.subOrderIds = [subOrder3A._id, subOrder3B._id];
+  await order3.save();
+
+  await PayoutLedger.create([
+    {
+      vendorId: pTee.vendorId,
+      subOrderId: subOrder3A._id,
+      amount: subOrder3A.vendorPayoutAmount,
+      commission: subOrder3A.commissionAmount,
+      status: 'settled',
+      settledAt: new Date(now - 2 * day),
+      settledBy: admin._id
+    },
+    {
+      vendorId: pWallet.vendorId,
+      subOrderId: subOrder3B._id,
+      amount: subOrder3B.vendorPayoutAmount,
+      commission: subOrder3B.commissionAmount,
+      status: 'settled',
+      settledAt: new Date(now - 2 * day),
+      settledBy: admin._id
+    }
+  ]);
+
+  await Review.create({
+    productId: pTee._id,
+    customerId: customer2._id,
+    subOrderId: subOrder3A._id,
+    rating: 5,
+    comment: 'Supreme quality cotton, retains shape even after multiple washes. The fabric is wonderfully soft.',
+    isFlagged: false,
+    createdAt: new Date(now - 2 * day)
+  });
+
+  // Order 4: Fresh active order (Artisanal Coffee Beans)
+  const order4 = await Order.create({
+    orderNumber: 'ORD-2026-1004',
+    customerId: customer1._id,
+    subOrderIds: [],
+    totalAmount: pCoffee.price * 2,
+    paymentStatus: 'paid',
+    paymentMethod: 'razorpay',
+    paymentDetails: { transactionId: 'pay_mock_1004', orderId: 'order_mock_1004' },
+    shippingAddress: addr1,
+    createdAt: new Date(now - 1 * day)
+  });
+
+  const subOrder4A = await SubOrder.create({
+    subOrderNumber: 'SUB-2026-1004-A',
+    parentOrderId: order4._id,
+    vendorId: pCoffee.vendorId,
+    customerId: customer1._id,
+    items: [{
+      productId: pCoffee._id,
+      productName: pCoffee.name,
+      price: pCoffee.price,
+      quantity: 2,
+      subtotal: pCoffee.price * 2
+    }],
+    subtotal: pCoffee.price * 2,
+    commissionRate: 0.10,
+    commissionAmount: Math.round(pCoffee.price * 2 * 0.10),
+    vendorPayoutAmount: Math.round(pCoffee.price * 2 * 0.90),
+    status: 'processing',
+    statusHistory: [
+      { status: 'placed', changedAt: new Date(now - 1 * day) },
+      { status: 'processing', changedAt: new Date(now - 4 * 60 * 60 * 1000) }
+    ],
+    createdAt: new Date(now - 1 * day)
+  });
+
+  order4.subOrderIds = [subOrder4A._id];
+  await order4.save();
+
+  await PayoutLedger.create({
+    vendorId: pCoffee.vendorId,
+    subOrderId: subOrder4A._id,
+    amount: subOrder4A.vendorPayoutAmount,
+    commission: subOrder4A.commissionAmount,
+    status: 'accrued'
+  });
+
+  console.log('Successfully seeded 4 realistic multi-vendor orders, 6 sub-orders, 6 payout ledgers, and verified reviews!');
   console.log('Seeding complete!');
   console.log('Demo Credentials:');
   console.log('  Admin:    admin@venfes.com / admin123');
