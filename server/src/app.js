@@ -29,11 +29,17 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser(env.COOKIE_SECRET));
 
+import mongoose from 'mongoose';
+
 // Health check endpoint (NFR-10, P0.2)
 app.get('/api/health', (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const dbStatusMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
   res.json({
     status: 'ok',
     uptime: process.uptime(),
+    database: dbStatusMap[dbState] || 'unknown',
+    databaseConnected: dbState === 1,
     timestamp: new Date().toISOString()
   });
 });

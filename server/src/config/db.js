@@ -3,7 +3,10 @@ import { env } from './env.js';
 
 export async function connectDB(uri = env.MONGODB_URI) {
   try {
-    const conn = await mongoose.connect(uri);
+    const conn = await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000
+    });
     return conn;
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
